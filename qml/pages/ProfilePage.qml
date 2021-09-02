@@ -7,6 +7,7 @@ import io.thp.pyotherside 1.3
 import "../components"
 
 UITK.Page {
+    property bool isEditing: false
     property string errorMsg
     property string profileName
     property string peerKey
@@ -42,6 +43,7 @@ UITK.Page {
                 title: i18n.ctr("download icon setting", "Profile name")
                 control: UITK.TextField {
                     text: profileName
+                    enabled: !isEditing
                     onTextChanged: {
                         errorMsg = ''
                         profileName = text

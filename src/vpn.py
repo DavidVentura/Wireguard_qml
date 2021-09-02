@@ -17,10 +17,14 @@ def _connect(profile_name):
         return connect(profile_name)
     except Exception as e:
         return str(e)
-def connect(profile_name):
-    profile = get_profile(profile_name)
+
+def disconnect():
     # It is fine to have this fail, it is only trying to cleanup before starting
     subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'del', 'dev', INTERFACE], check=False)
+
+def connect(profile_name):
+    profile = get_profile(profile_name)
+    disconnect()
 
     # TODO: try to create via `ip` and validate if the kernel module is there
     p = subprocess.Popen(['/usr/bin/sudo', '-E', 'vendored/wireguard', 'wg0'],

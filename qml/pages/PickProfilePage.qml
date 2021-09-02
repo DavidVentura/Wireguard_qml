@@ -5,6 +5,7 @@ import io.thp.pyotherside 1.3
 import "../components"
 
 UITK.Page {
+    property bool connected: true // FIXME
     header: UITK.PageHeader {
         id: header
         title: "Wireguard"
@@ -12,7 +13,16 @@ UITK.Page {
             UITK.Action {
                 iconName: "add"
                 onTriggered: {
-                    stack.push(Qt.resolvedUrl("CreateProfilePage.qml"))
+                    stack.push(Qt.resolvedUrl("ProfilePage.qml"))
+                }
+            },
+            UITK.Action {
+                iconName: "close"
+                visible: connected
+                onTriggered: {
+                    python.call('vpn.disconnect', [], function () {
+                        toast.show("Disconnected")
+                    })
                 }
             }
         ]
@@ -36,8 +46,8 @@ UITK.Page {
                     UITK.Action {
                         iconName: 'edit'
                         onTriggered: {
-                            stack.push(Qt.resolvedUrl("CreateProfilePage.qml"),
-                                       {
+                            stack.push(Qt.resolvedUrl("ProfilePage.qml"), {
+                                           "isEditing": true,
                                            "profileName": profile_name,
                                            "peerKey": peer_key,
                                            "allowedPrefixes": allowed_prefixes,
