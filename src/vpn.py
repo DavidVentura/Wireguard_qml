@@ -39,6 +39,9 @@ def connect(profile_name):
         print("Dying", flush=True)
         return err
 
+    PROFILE_DIR = PROFILES_DIR / profile_name
+    PRIV_KEY_PATH = PROFILE_DIR / 'privkey'
+
     p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg',
                           'set', INTERFACE,
                           'private-key', str(PRIV_KEY_PATH),

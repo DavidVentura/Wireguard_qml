@@ -1,18 +1,10 @@
 import QtQuick 2.0
-import Qt.labs.settings 1.0
 import Ubuntu.Components 1.3 as UITK
 import io.thp.pyotherside 1.3
 
 import "../components"
 
 UITK.Page {
-    property bool loadedKp: false
-    property bool pickingDB
-    property bool busy
-
-    Settings {
-        id: settings
-    }
     header: UITK.PageHeader {
         id: header
         title: "Wireguard"
@@ -87,18 +79,21 @@ UITK.Page {
             }
         }
     }
+    function populateProfiles() {
+        python.call('vpn.list_profiles', [], function (profiles) {
+            listmodel.clear()
+            for (var i = 0; i < profiles.length; i++) {
+                listmodel.append(profiles[i])
+            }
+        })
+    }
+
     Python {
         id: python
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../../src/'))
             importModule('vpn', function () {
-                python.call('vpn.list_profiles', [], function (profiles) {
-                    listmodel.clear()
-                    for (var i = 0; i < profiles.length; i++) {
-                        console.log(JSON.stringify(profiles[i], null, 2))
-                        listmodel.append(profiles[i])
-                    }
-                })
+                populateProfiles()
             })
         }
     }
