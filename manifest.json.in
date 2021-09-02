@@ -1,0 +1,15 @@
+{
+    "name": "wireguard.davidv.dev",
+    "description": "Wireguard VPN",
+    "architecture": "@CLICK_ARCH@",
+    "title": "Wireguard",
+    "hooks": {
+        "wireguard": {
+            "apparmor": "wireguard.apparmor",
+            "desktop":  "wireguard.desktop"
+        }
+    },
+    "version": "1.0.0",
+    "maintainer": "David Ventura <david@davidv.dev>",
+    "framework" : "@CLICK_FRAMEWORK@"
+}
