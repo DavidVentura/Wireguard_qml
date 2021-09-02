@@ -1,0 +1,3 @@
+[submodule "dep_build/wireguard-tools"]
+	path = dep_build/wireguard-tools
+	url = https://github.com/WireGuard/wireguard-tools.git

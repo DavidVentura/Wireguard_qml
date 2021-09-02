@@ -1,0 +1,4 @@
+FROM alpine:3.13
+RUN apk add make gcc musl-dev linux-headers
+ENV LDFLAGS='-static'
+WORKDIR /data
