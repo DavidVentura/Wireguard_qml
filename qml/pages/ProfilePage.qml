@@ -176,7 +176,9 @@ UITK.Page {
                         function (error) {
                             console.log(error)
                             if (!error) {
-                                stack.pop()
+                                stack.clear()
+                                stack.push(Qt.resolvedUrl(
+                                               "PickProfilePage.qml"))
                                 return
                             }
                             errorMsg = error
