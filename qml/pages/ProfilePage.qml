@@ -64,8 +64,8 @@ UITK.Page {
             SettingsItem {
                 title: i18n.ctr("download icon setting", "Allowed IP prefixes")
                 control: UITK.TextField {
+                    text: allowedPrefixes
                     onTextChanged: {
-                        text: allowedPrefixes
                         errorMsg = ''
                         allowedPrefixes = text
                     }
