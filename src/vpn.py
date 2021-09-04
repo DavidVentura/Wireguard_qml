@@ -3,73 +3,37 @@ import time
 import os
 import base64
 import json
+import textwrap
+import socket
+
+import daemon
+import interface
 
 from ipaddress import IPv4Network, IPv4Address
 from pathlib import Path
 
 CONFIG_DIR = Path('/home/phablet/.local/share/wireguard.davidv.dev')
 PROFILES_DIR = CONFIG_DIR / 'profiles'
+LOG_DIR = Path('/home/phablet/.cache/wireguard.davidv.dev')
 
-INTERFACE = 'wg0'
+
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+def can_use_kernel_module():
+    if not Path('/usr/bin/sudo').exists():
+        return False
+    try:
+        subprocess.run(['sudo', 'ip', 'link', 'add', 'test_wg0', 'type', 'wireguard'], check=True)
+        subprocess.run(['sudo', 'ip', 'link', 'del', 'test_wg0', 'type', 'wireguard'], check=True)
+    except subprocess.CalledProcessError:
+        return False
+    return True
 
 def _connect(profile_name):
     try:
-        return connect(profile_name)
+        return interface._connect(get_profile(profile_name), PROFILES_DIR / profile_name / 'config.ini')
     except Exception as e:
         return str(e)
-
-def disconnect():
-    # It is fine to have this fail, it is only trying to cleanup before starting
-    subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'del', 'dev', INTERFACE], check=False)
-
-def connect(profile_name):
-    profile = get_profile(profile_name)
-    disconnect()
-
-    # TODO: try to create via `ip` and validate if the kernel module is there
-    p = subprocess.Popen(['/usr/bin/sudo', '-E', 'vendored/wireguard', 'wg0'],
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE,
-                       env={'WG_I_PREFER_BUGGY_USERSPACE_TO_POLISHED_KMOD': '1',
-                            'WG_SUDO': '1'},
-                       )
-
-    p.wait()
-    err = p.stderr.read().decode()
-    print('stderr', err, flush=True)
-    print('stdout', p.stdout.read().decode(), flush=True)
-    print(p.returncode, flush=True)
-    if p.returncode != 0:
-        print("Dying", flush=True)
-        return err
-
-    PROFILE_DIR = PROFILES_DIR / profile_name
-    PRIV_KEY_PATH = PROFILE_DIR / 'privkey'
-
-    p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg',
-                          'set', INTERFACE,
-                          'private-key', str(PRIV_KEY_PATH),
-                          'peer', profile['peer_key'],
-                          'allowed-ips', profile['allowed_prefixes'],
-                          'endpoint', profile['endpoint']],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          )
-    p.wait()
-    err = p.stderr.read().decode()
-    print(err, flush=True)
-    print(p.stdout.read().decode(), flush=True)
-    print(p.returncode, flush=True)
-    if p.returncode != 0:
-        return err
-
-    # TODO: check return codes
-    subprocess.run(['/usr/bin/sudo', 'ip', 'address', 'add', 'dev', INTERFACE, profile['ip_address']], check=True)
-    subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'set', 'up', 'dev', INTERFACE], check=True)
-
-    for extra_route in profile['extra_routes'].split(','):
-        extra_route = extra_route.strip()
-        subprocess.run(['/usr/bin/sudo', 'ip', 'route', 'add', extra_route, 'dev', INTERFACE], check=True)
 
 def genkey():
     return subprocess.check_output(['vendored/wg', 'genkey']).strip()
@@ -103,6 +67,9 @@ def save_profile(profile_name, peer_key, allowed_prefixes, ip_address, endpoint,
     except Exception as e:
         return 'Bad peer key'
 
+    if ':' not in endpoint:
+        return 'Bad endpoint -- missing ":"'
+
     try:
         base64.b64decode(private_key)
     except Exception as e:
@@ -115,18 +82,20 @@ def save_profile(profile_name, peer_key, allowed_prefixes, ip_address, endpoint,
         except Exception as e:
             return 'Bad prefix ' + allowed_prefix + ': ' + str(e)
 
-    for route in extra_routes.split(','):
-        route = route.strip()
-        try:
-            IPv4Network(route, strict=False)
-        except Exception as e:
-            return 'Bad route ' + route + ': ' + str(e)
+    if extra_routes:
+        for route in extra_routes.split(','):
+            route = route.strip()
+            try:
+                IPv4Network(route, strict=False)
+            except Exception as e:
+                return 'Bad route ' + route + ': ' + str(e)
 
     PROFILE_DIR = PROFILES_DIR / profile_name
     PROFILE_DIR.mkdir(exist_ok=True, parents=True)
 
     PRIV_KEY_PATH = PROFILE_DIR / 'privkey'
     PROFILE_FILE = PROFILE_DIR / 'profile.json'
+    CONFIG_FILE = PROFILE_DIR / 'config.ini'
 
     with PRIV_KEY_PATH.open('w') as fd:
         fd.write(private_key)
@@ -141,6 +110,18 @@ def save_profile(profile_name, peer_key, allowed_prefixes, ip_address, endpoint,
                }
     with PROFILE_FILE.open('w') as fd:
         json.dump(profile, fd, indent=4, sort_keys=True)
+
+    with CONFIG_FILE.open('w') as fd:
+        fd.write(textwrap.dedent('''
+        [Interface]
+        PrivateKey = {private_key}
+
+        [Peer]
+        PublicKey = {peer_key}
+        AllowedIPs = {allowed_prefixes}
+        Endpoint = {endpoint}
+        PersistentKeepalive = 5
+        '''.format_map(profile)).strip())
 
 def get_profile(profile):
     with (PROFILES_DIR / profile / 'profile.json').open() as fd:

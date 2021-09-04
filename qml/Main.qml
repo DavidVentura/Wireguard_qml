@@ -16,15 +16,11 @@ UITK.MainView {
     width: units.gu(45)
     height: units.gu(75)
 
-    //        Python {
-    //            id: python
-    //            Component.onCompleted: {
-    //                addImportPath(Qt.resolvedUrl('../src/'))
-    //                importModule('vpn', function () {
-    //                    console.log("who")
-    //                })
-    //            }
-    //        }
+    Settings {
+        id: settings
+        property bool finishedWizard: false
+    }
+
     Toast {
         id: toast
     }
@@ -33,6 +29,11 @@ UITK.MainView {
         id: stack
     }
 
-    Component.onCompleted: stack.push(Qt.resolvedUrl(
-                                          "pages/PickProfilePage.qml"))
+    Component.onCompleted: {
+        if (settings.finishedWizard) {
+            stack.push(Qt.resolvedUrl("pages/PickProfilePage.qml"))
+        } else {
+            stack.push(Qt.resolvedUrl("pages/WizardPage.qml"))
+        }
+    }
 }

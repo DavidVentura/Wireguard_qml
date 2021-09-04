@@ -20,7 +20,7 @@ UITK.Page {
                 iconName: "close"
                 visible: connected
                 onTriggered: {
-                    python.call('vpn.disconnect', [], function () {
+                    python.call('vpn.interface.disconnect', [], function () {
                         toast.show("Disconnected")
                     })
                 }
@@ -89,6 +89,24 @@ UITK.Page {
             }
         }
     }
+
+    UITK.Label {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        wrapMode: Text.WordWrap
+        id: status_label
+    }
+
+    Timer {
+        repeat: true
+        interval: 1000
+        running: true
+        onTriggered: {
+            showStatus()
+        }
+    }
+
     function populateProfiles() {
         python.call('vpn.list_profiles', [], function (profiles) {
             listmodel.clear()
@@ -97,6 +115,12 @@ UITK.Page {
             }
         })
     }
+    function showStatus() {
+        python.call('vpn.interface.current_status_by_interface', [],
+                    function (status) {
+                        status_label.text = JSON.stringify(status, null, 2)
+                    })
+    }
 
     Python {
         id: python
@@ -104,6 +128,7 @@ UITK.Page {
             addImportPath(Qt.resolvedUrl('../../src/'))
             importModule('vpn', function () {
                 populateProfiles()
+                showStatus()
             })
         }
     }
