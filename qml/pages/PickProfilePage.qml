@@ -41,10 +41,8 @@ UITK.Page {
                             stack.push(Qt.resolvedUrl("ProfilePage.qml"), {
                                            "isEditing": true,
                                            "profileName": profile_name,
-                                           "peerKey": peer_key,
-                                           "allowedPrefixes": allowed_prefixes,
+                                           "peers": peers,
                                            "ipAddress": ip_address,
-                                           "endpoint": endpoint,
                                            "privateKey": private_key,
                                            "extraRoutes": extra_routes,
                                            "interfaceName": interface_name
@@ -80,9 +78,8 @@ UITK.Page {
             Column {
                 anchors.leftMargin: units.gu(2)
                 anchors.rightMargin: units.gu(2)
-                anchors.topMargin: units.gu(2)
-                anchors.bottomMargin: units.gu(2)
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
 
                 Text {
                     text: interface_name + ' - ' + profile_name

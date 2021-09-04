@@ -49,15 +49,9 @@ def genpubkey(privkey):
         return stdout.strip()
     return stderr.strip()
 
-def save_profile(profile_name, peer_key,
-                 allowed_prefixes,
-                 ip_address, endpoint, private_key,
-                 extra_routes, interface_name):
+def save_profile(profile_name, ip_address, private_key, interface_name, extra_routes, peers):
     if '/' in profile_name:
         return '"/" is not allowed in profile names'
-
-    if len(peer_key) != 44:
-        return 'Peer key must be exactly 44 bytes long'
 
     if len(private_key) != 44:
         return 'Peer key must be exactly 44 bytes long'
@@ -65,25 +59,38 @@ def save_profile(profile_name, peer_key,
     _pub = genpubkey(private_key)
     if len(_pub) != 44:
         return 'Bad private key: ' + _pub
-    try:
-        base64.b64decode(peer_key)
-    except Exception as e:
-        return 'Bad peer key'
 
-    if ':' not in endpoint:
-        return 'Bad endpoint -- missing ":"'
+    try:
+        IPv4Network(ip_address, strict=False)
+    except Exception as e:
+        return 'Bad ip address: ' + str(e)
 
     try:
         base64.b64decode(private_key)
     except Exception as e:
         return 'Bad private key'
 
-    for allowed_prefix in allowed_prefixes.split(','):
-        allowed_prefix = allowed_prefix.strip()
+    for peer in peers:
+        if not peer['name']:
+            return 'Peer name is incomplete'
+
+        if len(peer['key']) != 44:
+            return 'Peer key ({name}) must be exactly 44 bytes long'.format_map(peer)
         try:
-            IPv4Network(allowed_prefix, strict=False)
+            base64.b64decode(peer['key'])
         except Exception as e:
-            return 'Bad prefix ' + allowed_prefix + ': ' + str(e)
+            return 'Bad peer ({name}) key'.format_map(peer)
+
+        if ':' not in peer['endpoint']:
+            return 'Bad endpoint ({name}) -- missing ":"'.format_map(peer)
+
+        allowed_prefixes = peer['allowed_prefixes']
+        for allowed_prefix in allowed_prefixes.split(','):
+            allowed_prefix = allowed_prefix.strip()
+            try:
+                IPv4Network(allowed_prefix, strict=False)
+            except Exception as e:
+                return 'Bad peer ({name}) prefix '.format_map(peer) + allowed_prefix + ': ' + str(e)
 
     if extra_routes:
         for route in extra_routes.split(','):
@@ -103,10 +110,8 @@ def save_profile(profile_name, peer_key,
     with PRIV_KEY_PATH.open('w') as fd:
         fd.write(private_key)
 
-    profile = {'peer_key': peer_key,
-               'allowed_prefixes': allowed_prefixes,
+    profile = {'peers': peers,
                'ip_address': ip_address,
-               'endpoint': endpoint,
                'extra_routes': extra_routes,
                'profile_name': profile_name,
                'private_key': private_key,
@@ -118,18 +123,24 @@ def save_profile(profile_name, peer_key,
     with CONFIG_FILE.open('w') as fd:
         fd.write(textwrap.dedent('''
         [Interface]
+        #Profile = {profile_name}
         PrivateKey = {private_key}
-
-        [Peer]
-        PublicKey = {peer_key}
-        AllowedIPs = {allowed_prefixes}
-        Endpoint = {endpoint}
-        PersistentKeepalive = 5
-        '''.format_map(profile)).strip())
+        ''').format_map(profile))
+        for peer in peers:
+            fd.write(textwrap.dedent('''
+            [Peer]
+            #Name = {name}
+            PublicKey = {key}
+            AllowedIPs = {allowed_prefixes}
+            Endpoint = {endpoint}
+            PersistentKeepalive = 5
+            '''.format_map(peer)))
 
 def get_profile(profile):
     with (PROFILES_DIR / profile / 'profile.json').open() as fd:
-        return json.load(fd)
+        data = json.load(fd)
+        print(data, flush=True)
+        return data
 
 def list_profiles():
     profiles = []
@@ -138,5 +149,6 @@ def list_profiles():
             data = json.load(fd)
             data.setdefault('interface_name', 'wg0')
             data['status'] = {}
+            print(data, flush=True)
             profiles.append(data)
     return profiles

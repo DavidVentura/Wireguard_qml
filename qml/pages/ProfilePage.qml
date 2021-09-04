@@ -15,11 +15,7 @@ UITK.Page {
     property string extraRoutes
     property string interfaceName
 
-    // FIXME: how to make into array
-    property string peerName
-    property string peerKey
-    property string allowedPrefixes
-    property string endpoint
+    property variant peers: []
 
     Settings {
         id: settings
@@ -32,54 +28,50 @@ UITK.Page {
 
     Flickable {
         id: flick
-        anchors.top: header.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: save.top
+        anchors.bottom: parent.bottom
+        anchors.top: header.bottom
         anchors.topMargin: units.gu(2)
-        contentHeight: col.height
+        contentHeight: col.height // FIXME doesn't work if content larger than screen
         contentWidth: width
 
         Column {
             id: col
-            anchors.fill: parent
-            spacing: units.gu(1)
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Profile name")
-                control: UITK.TextField {
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.left: parent.left
+            spacing: units.gu(1.5)
+
+            Column {
+                anchors.right: parent.right
+                anchors.left: parent.left
+                spacing: units.gu(1.5)
+                MyTextField {
+                    title: i18n.ctr("download icon setting", "Profile name")
                     text: profileName
                     enabled: !isEditing
-                    onTextChanged: {
+                    onChanged: {
                         errorMsg = ''
                         profileName = text
                     }
                 }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Private Key")
-                control: Column {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    RowLayout {
-                        anchors.right: parent.right
-                        anchors.left: parent.left
-                        spacing: units.gu(1)
-                        UITK.TextField {
-                            id: privateKeyField
-                            Layout.fillWidth: true
-                            text: privateKey
-                            onTextChanged: {
-                                errorMsg = ''
-                                privateKey = text
-                            }
-                            placeholderText: "a2VlcCB0aGlzIHNlY3JldAo="
-                        }
+
+                MyTextField {
+                    id: privateKeyField
+                    title: i18n.ctr("download icon setting", "Private Key")
+                    placeholder: "a2VlcCB0aGlzIHNlY3JldAo="
+                    text: privateKey
+                    onChanged: {
+                        errorMsg = ''
+                        privateKey = text
+                    }
+                    control: RowLayout {
                         UITK.Button {
                             id: genKey
                             text: "Generate"
                             onClicked: {
-                                privateKeyField.text = python.call_sync(
-                                            'vpn.genkey', [])
+                                privateKey = python.call_sync('vpn.genkey', [])
                             }
                         }
                         UITK.Button {
@@ -94,75 +86,98 @@ UITK.Page {
                         }
                     }
                 }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting",
-                                "IP address with netmask")
-                control: UITK.TextField {
+                MyTextField {
+                    title: i18n.ctr("download icon setting",
+                                    "IP address (with prefix length)")
                     text: ipAddress
-                    onTextChanged: {
+                    placeholder: "10.0.0.14/24"
+                    onChanged: {
                         errorMsg = ''
                         ipAddress = text
                     }
-                    placeholderText: "10.0.0.14/24"
                 }
-            }
-            // TODO: Optional
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Extra routes")
-                control: UITK.TextField {
+                // TODO: Optional
+                MyTextField {
+                    title: i18n.ctr("download icon ", "Extra routes")
                     text: extraRoutes
-                    onTextChanged: {
+                    placeholder: "10.0.0.14/24"
+                    onChanged: {
+                        errorMsg = ''
                         extraRoutes = text
-                        errorMsg = ''
                     }
                 }
             }
 
-            // all of these should be in a repeater or some magic, these are an array
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Peer name")
-                control: UITK.TextField {
-                    text: peerName
-                    onTextChanged: {
-                        errorMsg = ''
-                        peerName = text
-                    }
-                    placeholderText: ""
+            Repeater {
+                model: ListModel {
+                    id: listmodel
+                    dynamicRoles: true
                 }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Peer's public key")
-                control: UITK.TextField {
-                    text: peerKey
-                    onTextChanged: {
-                        errorMsg = ''
-                        peerKey = text
+                delegate: Column {
+                    id: peerCol
+                    spacing: units.gu(1.5)
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    RowLayout {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.leftMargin: units.gu(2)
+                        anchors.rightMargin: units.gu(2)
+                        UITK.Label {
+                            Layout.fillWidth: true
+                            text: 'Peer'
+                        }
+                        UITK.Icon {
+                            name: "delete"
+                            width: units.gu(2)
+                            height: units.gu(2)
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    listmodel.remove(index)
+                                }
+                            }
+                        }
                     }
-                    placeholderText: "c29tZSBzaWxseSBzdHVmZgo="
-                }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Allowed IP prefixes")
-                control: UITK.TextField {
-                    text: allowedPrefixes
-                    onTextChanged: {
-                        errorMsg = ''
-                        allowedPrefixes = text
-                    }
-                    placeholderText: "10.0.0.1/32, 192.168.1.0/24"
-                }
-            }
 
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Endpoint with port")
-                control: UITK.TextField {
-                    text: endpoint
-                    onTextChanged: {
-                        errorMsg = ''
-                        endpoint = text
+                    MyTextField {
+                        title: i18n.ctr("download icon setting", "Name" + index)
+                        text: name
+                        onChanged: {
+                            errorMsg = ''
+                            name = text
+                        }
                     }
-                    placeholderText: "vpn.example.com:1234"
+                    MyTextField {
+                        title: i18n.ctr("download icon setting", "Public key")
+                        placeholder: "c29tZSBzaWxseSBzdHVmZgo="
+                        text: key
+                        onChanged: {
+                            errorMsg = ''
+                            key = text
+                        }
+                    }
+                    MyTextField {
+                        title: i18n.ctr("download icon setting",
+                                        "Allowed IP prefixes")
+                        text: allowedPrefixes
+                        onChanged: {
+                            errorMsg = ''
+                            allowedPrefixes = text
+                        }
+                        placeholder: "10.0.0.1/32, 192.168.1.0/24"
+                    }
+
+                    MyTextField {
+                        title: i18n.ctr("download icon setting",
+                                        "Endpoint with port")
+                        text: endpoint
+                        onChanged: {
+                            errorMsg = ''
+                            endpoint = text
+                        }
+                        placeholder: "vpn.example.com:1234"
+                    }
                 }
             }
 
@@ -179,6 +194,21 @@ UITK.Page {
                     return 'Interface: wg' + (settings.interfaceNumber + 1)
                 }
             }
+            UITK.Button {
+                text: "Add peer"
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: units.gu(2)
+                anchors.rightMargin: units.gu(2)
+                onClicked: {
+                    listmodel.append({
+                                         "name": '',
+                                         "key": '',
+                                         "allowedPrefixes": '',
+                                         "endpoint": ''
+                                     })
+                }
+            }
             UITK.Label {
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -189,39 +219,69 @@ UITK.Page {
                 text: errorMsg
                 color: 'red'
             }
+
+            UITK.Button {
+                id: save
+                text: "Save"
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottomMargin: units.gu(2)
+                anchors.leftMargin: units.gu(2)
+                anchors.rightMargin: units.gu(2)
+                enabled: listmodel.count && profileName && ipAddress
+                         && privateKey
+                onClicked: {
+                    errorMsg = ''
+                    let _peers = []
+                    for (var i = 0; i < listmodel.count; i++) {
+                        const p = listmodel.get(i)
+                        _peers.push({
+                                        "name": p.name,
+                                        "key": p.key,
+                                        "allowed_prefixes": p.allowedPrefixes,
+                                        "endpoint": p.endpoint
+                                    })
+                    }
+
+                    python.call('vpn.save_profile',
+                                [profileName, ipAddress, privateKey, interfaceName, extraRoutes, _peers],
+                                function (error) {
+                                    console.log(error)
+                                    if (!error) {
+                                        if (!isEditing) {
+                                            settings.interfaceNumber = settings.interfaceNumber + 1
+                                        }
+                                        stack.clear()
+                                        stack.push(Qt.resolvedUrl(
+                                                       "PickProfilePage.qml"))
+                                        return
+                                    }
+                                    errorMsg = error
+                                })
+                }
+            }
         }
     }
 
-    UITK.Button {
-        id: save
-        text: "Save"
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: units.gu(2)
-        anchors.leftMargin: units.gu(2)
-        anchors.rightMargin: units.gu(2)
-        enabled: peerKey && profileName && allowedPrefixes && ipAddress
-                 && endpoint && privateKey && peerName
-        onClicked: {
-            errorMsg = ''
-            python.call('vpn.save_profile',
-                        [profileName, peerKey, allowedPrefixes, ipAddress, endpoint, privateKey, extraRoutes],
-                        function (error) {
-                            console.log(error)
-                            if (!error) {
-                                if (!isEditing) {
-                                    settings.interfaceNumber = settings.interfaceNumber + 1
-                                }
-                                stack.clear()
-                                stack.push(Qt.resolvedUrl(
-                                               "PickProfilePage.qml"))
-                                return
-                            }
-                            errorMsg = error
-                        })
+    Component.onCompleted: {
+
+        for (var i = 0; i < peers.count; i++) {
+            const p = peers.get(i)
+            listmodel.append({
+                                 "name": p.name,
+                                 "key": p.key,
+                                 "allowedPrefixes": p.allowed_prefixes,
+                                 "endpoint": p.endpoint
+                             })
         }
+        listmodel.append({
+                             "name": '',
+                             "key": '',
+                             "allowedPrefixes": '',
+                             "endpoint": ''
+                         })
     }
+
     Python {
         id: python
         Component.onCompleted: {
