@@ -49,7 +49,10 @@ def genpubkey(privkey):
         return stdout.strip()
     return stderr.strip()
 
-def save_profile(profile_name, peer_key, allowed_prefixes, ip_address, endpoint, private_key, extra_routes):
+def save_profile(profile_name, peer_key,
+                 allowed_prefixes,
+                 ip_address, endpoint, private_key,
+                 extra_routes, interface_name):
     if '/' in profile_name:
         return '"/" is not allowed in profile names'
 
@@ -107,6 +110,7 @@ def save_profile(profile_name, peer_key, allowed_prefixes, ip_address, endpoint,
                'extra_routes': extra_routes,
                'profile_name': profile_name,
                'private_key': private_key,
+               'interface_name': interface_name,
                }
     with PROFILE_FILE.open('w') as fd:
         json.dump(profile, fd, indent=4, sort_keys=True)
@@ -131,5 +135,8 @@ def list_profiles():
     profiles = []
     for path in PROFILES_DIR.glob('*/profile.json'):
         with path.open() as fd:
-            profiles.append(json.load(fd))
+            data = json.load(fd)
+            data.setdefault('interface_name', 'wg0')
+            data['status'] = {}
+            profiles.append(data)
     return profiles

@@ -15,15 +15,6 @@ UITK.Page {
                 onTriggered: {
                     stack.push(Qt.resolvedUrl("ProfilePage.qml"))
                 }
-            },
-            UITK.Action {
-                iconName: "close"
-                visible: connected
-                onTriggered: {
-                    python.call('vpn.interface.disconnect', [], function () {
-                        toast.show("Disconnected")
-                    })
-                }
             }
         ]
     }
@@ -37,10 +28,11 @@ UITK.Page {
         id: lv
         model: ListModel {
             id: listmodel
+            dynamicRoles: true
         }
 
         delegate: UITK.ListItem {
-
+            height: units.gu(10)
             trailingActions: UITK.ListItemActions {
                 actions: [
                     UITK.Action {
@@ -54,12 +46,14 @@ UITK.Page {
                                            "ipAddress": ip_address,
                                            "endpoint": endpoint,
                                            "privateKey": private_key,
-                                           "extraRoutes": extra_routes
+                                           "extraRoutes": extra_routes,
+                                           "interfaceName": interface_name
                                        })
                         }
                     },
                     UITK.Action {
                         iconName: 'webbrowser-app'
+                        visible: !status
                         onTriggered: {
                             python.call('vpn._connect', [profile_name],
                                         function (error_msg) {
@@ -68,6 +62,16 @@ UITK.Page {
                                                 return
                                             }
                                             toast.show('Connected')
+                                        })
+                        }
+                    },
+                    UITK.Action {
+                        iconName: "close"
+                        visible: status
+                        onTriggered: {
+                            python.call('vpn.interface.disconnect',
+                                        [interface_name], function () {
+                                            toast.show("Disconnected")
                                         })
                         }
                     }
@@ -81,21 +85,24 @@ UITK.Page {
                 anchors.fill: parent
 
                 Text {
-                    text: profile_name
+                    text: interface_name + ' - ' + profile_name
                 }
                 Text {
                     text: endpoint
                 }
+                Repeater {
+                    visible: status
+                    model: status.peers
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    delegate: Text {
+                        text: 'RX: ' + toHuman(
+                                  status.peers[index].rx) + ' TX:' + toHuman(
+                                  status.peers[index].tx)
+                    }
+                }
             }
         }
-    }
-
-    UITK.Label {
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        wrapMode: Text.WordWrap
-        id: status_label
     }
 
     Timer {
@@ -105,6 +112,20 @@ UITK.Page {
         onTriggered: {
             showStatus()
         }
+    }
+
+    function toHuman(q) {
+        if (!q) {
+            return 0
+        }
+
+        const units = ['B', 'KB', 'MB', 'GB', 'TB']
+        let i = 0
+        while (q > 1024) {
+            q = q / 1024
+            i++
+        }
+        return Math.round(q, 1) + units[i]
     }
 
     function populateProfiles() {
@@ -117,8 +138,22 @@ UITK.Page {
     }
     function showStatus() {
         python.call('vpn.interface.current_status_by_interface', [],
-                    function (status) {
-                        status_label.text = JSON.stringify(status, null, 2)
+                    function (all_status) {
+                        const keys = Object.keys(all_status)
+                        for (var i = 0; i < listmodel.count; i++) {
+                            const entry = listmodel.get(i)
+
+                            let status = ''
+                            for (const idx in Object.keys(all_status)) {
+                                const key = keys[idx]
+                                const i_status = all_status[key]
+                                if (entry.interface_name === key) {
+                                    status = i_status
+                                    break
+                                }
+                            }
+                            listmodel.setProperty(i, 'status', status)
+                        }
                     })
     }
 

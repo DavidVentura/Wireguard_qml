@@ -10,15 +10,20 @@ UITK.Page {
     property bool isEditing: false
     property string errorMsg
     property string profileName
-    property string peerKey
-    property string allowedPrefixes
     property string ipAddress
-    property string endpoint
     property string privateKey
     property string extraRoutes
+    property string interfaceName
+
+    // FIXME: how to make into array
+    property string peerName
+    property string peerKey
+    property string allowedPrefixes
+    property string endpoint
 
     Settings {
         id: settings
+        property int interfaceNumber: 0
     }
     header: UITK.PageHeader {
         id: header
@@ -48,51 +53,6 @@ UITK.Page {
                         errorMsg = ''
                         profileName = text
                     }
-                }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Peer's public key")
-                control: UITK.TextField {
-                    text: peerKey
-                    onTextChanged: {
-                        errorMsg = ''
-                        peerKey = text
-                    }
-                    placeholderText: "c29tZSBzaWxseSBzdHVmZgo="
-                }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Allowed IP prefixes")
-                control: UITK.TextField {
-                    text: allowedPrefixes
-                    onTextChanged: {
-                        errorMsg = ''
-                        allowedPrefixes = text
-                    }
-                    placeholderText: "10.0.0.1/32, 192.168.1.0/24"
-                }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting",
-                                "IP address with netmask")
-                control: UITK.TextField {
-                    text: ipAddress
-                    onTextChanged: {
-                        errorMsg = ''
-                        ipAddress = text
-                    }
-                    placeholderText: "10.0.0.14/24"
-                }
-            }
-            SettingsItem {
-                title: i18n.ctr("download icon setting", "Endpoint with port")
-                control: UITK.TextField {
-                    text: endpoint
-                    onTextChanged: {
-                        errorMsg = ''
-                        endpoint = text
-                    }
-                    placeholderText: "vpn.example.com:1234"
                 }
             }
             SettingsItem {
@@ -136,6 +96,19 @@ UITK.Page {
                 }
             }
             SettingsItem {
+                title: i18n.ctr("download icon setting",
+                                "IP address with netmask")
+                control: UITK.TextField {
+                    text: ipAddress
+                    onTextChanged: {
+                        errorMsg = ''
+                        ipAddress = text
+                    }
+                    placeholderText: "10.0.0.14/24"
+                }
+            }
+            // TODO: Optional
+            SettingsItem {
                 title: i18n.ctr("download icon setting", "Extra routes")
                 control: UITK.TextField {
                     text: extraRoutes
@@ -143,6 +116,67 @@ UITK.Page {
                         extraRoutes = text
                         errorMsg = ''
                     }
+                }
+            }
+
+            // all of these should be in a repeater or some magic, these are an array
+            SettingsItem {
+                title: i18n.ctr("download icon setting", "Peer name")
+                control: UITK.TextField {
+                    text: peerName
+                    onTextChanged: {
+                        errorMsg = ''
+                        peerName = text
+                    }
+                    placeholderText: ""
+                }
+            }
+            SettingsItem {
+                title: i18n.ctr("download icon setting", "Peer's public key")
+                control: UITK.TextField {
+                    text: peerKey
+                    onTextChanged: {
+                        errorMsg = ''
+                        peerKey = text
+                    }
+                    placeholderText: "c29tZSBzaWxseSBzdHVmZgo="
+                }
+            }
+            SettingsItem {
+                title: i18n.ctr("download icon setting", "Allowed IP prefixes")
+                control: UITK.TextField {
+                    text: allowedPrefixes
+                    onTextChanged: {
+                        errorMsg = ''
+                        allowedPrefixes = text
+                    }
+                    placeholderText: "10.0.0.1/32, 192.168.1.0/24"
+                }
+            }
+
+            SettingsItem {
+                title: i18n.ctr("download icon setting", "Endpoint with port")
+                control: UITK.TextField {
+                    text: endpoint
+                    onTextChanged: {
+                        errorMsg = ''
+                        endpoint = text
+                    }
+                    placeholderText: "vpn.example.com:1234"
+                }
+            }
+
+            UITK.Label {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: units.gu(2)
+                anchors.rightMargin: units.gu(2)
+                wrapMode: Text.WordWrap
+                text: {
+                    if (isEditing) {
+                        return 'Interface: ' + interfaceName
+                    }
+                    return 'Interface: wg' + (settings.interfaceNumber + 1)
                 }
             }
             UITK.Label {
@@ -168,7 +202,7 @@ UITK.Page {
         anchors.leftMargin: units.gu(2)
         anchors.rightMargin: units.gu(2)
         enabled: peerKey && profileName && allowedPrefixes && ipAddress
-                 && endpoint && privateKey
+                 && endpoint && privateKey && peerName
         onClicked: {
             errorMsg = ''
             python.call('vpn.save_profile',
@@ -176,6 +210,9 @@ UITK.Page {
                         function (error) {
                             console.log(error)
                             if (!error) {
+                                if (!isEditing) {
+                                    settings.interfaceNumber = settings.interfaceNumber + 1
+                                }
                                 stack.clear()
                                 stack.push(Qt.resolvedUrl(
                                                "PickProfilePage.qml"))

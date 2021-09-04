@@ -1,18 +1,17 @@
 import subprocess
 from pathlib import Path
-INTERFACE = 'wg0'
 
 def _connect(profile, config_file):
-    disconnect()
+    interface_name = profile['interface_name']
+    disconnect(interface_name)
 
     # TODO: run on a loop based on network changes
-    # TODO: try to create via `ip` and validate if the kernel module is there
-    #with (LOG_DIR / 'out.log').open('w') as stdout, (LOG_DIR / 'err.log').open('w') as stderr:
+    # TODO: logdir broken
     try:
-        subprocess.run(['sudo', 'ip', 'link', 'add', 'wg0', 'type', 'wireguard'], check=True)
+        subprocess.run(['sudo', 'ip', 'link', 'add', interface_name, 'type', 'wireguard'], check=True)
     except subprocess.CalledProcessError as e:
         print("Failed to use kernel module.. falling back to userspace implementation", flush=True)
-        p = subprocess.Popen(['/usr/bin/sudo', '-E', 'vendored/wireguard', 'wg0',
+        p = subprocess.Popen(['/usr/bin/sudo', '-E', 'vendored/wireguard', interface_name,
         ],
                            stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE,
@@ -34,7 +33,7 @@ def _connect(profile, config_file):
             return err
 
     p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg',
-                          'setconf', INTERFACE, str(config_file)],
+                          'setconf', interface_name, str(config_file)],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE,
                           )
@@ -47,18 +46,18 @@ def _connect(profile, config_file):
         return err
 
     # TODO: check return codes
-    subprocess.run(['/usr/bin/sudo', 'ip', 'address', 'add', 'dev', INTERFACE, profile['ip_address']], check=True)
-    subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'set', 'up', 'dev', INTERFACE], check=True)
+    subprocess.run(['/usr/bin/sudo', 'ip', 'address', 'add', 'dev', interface_name, profile['ip_address']], check=True)
+    subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'set', 'up', 'dev', interface_name], check=True)
 
     for extra_route in profile['extra_routes'].split(','):
         extra_route = extra_route.strip()
-        subprocess.run(['/usr/bin/sudo', 'ip', 'route', 'add', extra_route, 'dev', INTERFACE], check=True)
+        subprocess.run(['/usr/bin/sudo', 'ip', 'route', 'add', extra_route, 'dev', interface_name], check=True)
 
 #
 
-def disconnect():
+def disconnect(interface_name):
     # It is fine to have this fail, it is only trying to cleanup before starting
-    subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'del', 'dev', INTERFACE],
+    subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'del', 'dev', interface_name],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                    check=False)
 #
