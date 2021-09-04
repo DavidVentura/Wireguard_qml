@@ -22,19 +22,10 @@ Item {
     RowLayout {
         anchors.left: parent.left
         anchors.right: parent.right
-        TextField {
+        UITK.TextField {
             id: tf
             Layout.fillWidth: true
             placeholderText: '<font color="#ccc">' + placeholder + '</font>'
-            topPadding: units.gu(1)
-            bottomPadding: units.gu(1)
-            leftPadding: units.gu(1)
-            background: Rectangle {
-                radius: units.gu(0.8)
-                color: tf.enabled ? "white" : "#eee"
-                border.color: "#ccc" // fixme
-                border.width: 1
-            }
             onTextChanged: changed(text)
         }
         Loader {
@@ -53,9 +44,9 @@ Item {
     }
 
     Rectangle {
-        color: tf.background.color
+        color: tf.enabled ? 'white' : '#ddd'
         x: lb.x - units.gu(0.5)
-        y: tf.y //lb.y + lb.height / 2
+        y: tf.y
         width: lb.width + units.gu(1)
         height: lb.height / 2
     }

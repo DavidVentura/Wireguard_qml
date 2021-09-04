@@ -84,18 +84,18 @@ UITK.Page {
                 Text {
                     text: interface_name + ' - ' + profile_name
                 }
-                Text {
-                    text: endpoint
-                }
+
                 Repeater {
                     visible: status
                     model: status.peers
                     anchors.left: parent.left
                     anchors.right: parent.right
                     delegate: Text {
-                        text: 'RX: ' + toHuman(
-                                  status.peers[index].rx) + ' TX:' + toHuman(
-                                  status.peers[index].tx)
+                        text: peerName(status.peers[index].public_key,
+                                       peers) + ' RX: ' + toHuman(
+                                  status.peers[index].rx) + ' TX: ' + toHuman(
+                                  status.peers[index].tx) + ' Up for: ' + ago(
+                                  status.peers[index].latest_handshake)
                     }
                 }
             }
@@ -108,6 +108,28 @@ UITK.Page {
         running: true
         onTriggered: {
             showStatus()
+        }
+    }
+
+    function peerName(pubkey, peers) {
+        for (var i = 0; i < peers.count; i++) {
+            const peer = peers.get(i)
+            if (peer.key === pubkey) {
+                return peer.name
+            }
+        }
+        return 'unknown peer'
+    }
+    function ago(ts) {
+        const delta = (new Date().getTime()) / 1000 - ts
+        if (delta > 3600) {
+            return Math.round(delta / 3600) + 'h'
+        }
+        if (delta > 60) {
+            return Math.round(delta / 60) + 'm'
+        }
+        if (delta < 60) {
+            return Math.round(delta) + 's'
         }
     }
 
