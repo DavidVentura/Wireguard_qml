@@ -23,7 +23,7 @@ UITK.Page {
     }
     header: UITK.PageHeader {
         id: header
-        title: "Manage profile"
+        title: isEditing ? "Edit profile " + profileName : "Create a new profile"
     }
 
     Flickable {
@@ -33,7 +33,7 @@ UITK.Page {
         anchors.bottom: parent.bottom
         anchors.top: header.bottom
         anchors.topMargin: units.gu(2)
-        contentHeight: col.height // FIXME doesn't work if content larger than screen
+        contentHeight: col.height
         contentWidth: width
 
         Column {
@@ -48,6 +48,7 @@ UITK.Page {
                 anchors.left: parent.left
                 spacing: units.gu(1.5)
                 MyTextField {
+                    visible: !isEditing
                     title: i18n.ctr("download icon setting", "Profile name")
                     text: profileName
                     enabled: !isEditing
@@ -125,7 +126,7 @@ UITK.Page {
                         anchors.rightMargin: units.gu(2)
                         UITK.Label {
                             Layout.fillWidth: true
-                            text: 'Peer'
+                            text: 'Peer #' + (index + 1)
                         }
                         UITK.Icon {
                             name: "delete"
@@ -222,7 +223,7 @@ UITK.Page {
 
             UITK.Button {
                 id: save
-                text: "Save"
+                text: "Save profile"
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottomMargin: units.gu(2)
