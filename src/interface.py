@@ -19,10 +19,7 @@ def start_daemon(profile, config_file):
                           stdin=subprocess.DEVNULL,
                           start_new_session=True,
                         )
-    print('starting daemon')
-    p.wait()
-    print(p.stderr.read())
-    print('daemon started', p.returncode, flush=True)
+    print('started daemon')
 
 def config_interface(profile, config_file):
     interface_name = profile['interface_name']
