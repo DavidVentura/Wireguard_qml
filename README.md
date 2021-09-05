@@ -4,6 +4,18 @@ Wireguard VPN.
 
 Supports kernel & fallback userspace implementation. The userspace implementation is **alpha quality**. The kernel implementation is very solid.
 
+How to use:
+
+* Add a new profile
+* On the main screen, tap on the profile to connect/disconnect.
+
+Features:
+
+* Multiple profiles
+  * they can all be enabled at the same time
+* Userspace fallback
+* Extra routes can be added per-profle
+
 ## Get kernel support for wireguard on your device
 
 It is very easy! You can follow the steps [here](https://www.wireguard.com/compilation/) and send a MR to your maintainer.  
