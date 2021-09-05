@@ -6,8 +6,8 @@ import json
 import textwrap
 import socket
 
-import daemon
 import interface
+import daemon
 
 from ipaddress import IPv4Network, IPv4Address
 from pathlib import Path
@@ -29,9 +29,9 @@ def can_use_kernel_module():
         return False
     return True
 
-def _connect(profile_name):
+def _connect(profile_name,  use_kmod):
     try:
-        return interface._connect(get_profile(profile_name), PROFILES_DIR / profile_name / 'config.ini')
+        return interface._connect(get_profile(profile_name), PROFILES_DIR / profile_name / 'config.ini', use_kmod)
     except Exception as e:
         return str(e)
 
@@ -139,7 +139,6 @@ def save_profile(profile_name, ip_address, private_key, interface_name, extra_ro
 def get_profile(profile):
     with (PROFILES_DIR / profile / 'profile.json').open() as fd:
         data = json.load(fd)
-        print(data, flush=True)
         return data
 
 def list_profiles():

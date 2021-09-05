@@ -40,8 +40,7 @@ UITK.Page {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 wrapMode: Text.WordWrap
-                text: "Kernel module is <b>not usable</b>.<br/>Will fall back to the slow, buggy, userspace implementation.<br/>\
-In particular, roaming does not work well, so you have to turn on and off your VPN when your IP changes!"
+                text: "Kernel module is <b>not usable</b>.<br/>Will fall back to the slow, buggy, userspace implementation."
                 onLinkActivated: Qt.openUrlExternally(link)
             }
         }

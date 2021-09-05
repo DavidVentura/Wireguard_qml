@@ -1,36 +1,32 @@
 import subprocess
 from pathlib import Path
 
-def _connect(profile, config_file):
+def _connect(profile, config_file, use_kmod):
     interface_name = profile['interface_name']
     disconnect(interface_name)
 
-    # TODO: run on a loop based on network changes
-    # TODO: logdir broken
-    try:
+    if use_kmod:
         subprocess.run(['sudo', 'ip', 'link', 'add', interface_name, 'type', 'wireguard'], check=True)
-    except subprocess.CalledProcessError as e:
-        print("Failed to use kernel module.. falling back to userspace implementation", flush=True)
-        p = subprocess.Popen(['/usr/bin/sudo', '-E', 'vendored/wireguard', interface_name,
-        ],
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE,
-                           stdin=subprocess.DEVNULL,
-                           env={'WG_I_PREFER_BUGGY_USERSPACE_TO_POLISHED_KMOD': '1',
-                                'WG_SUDO': '1',
-                                'WG_LOG_LEVEL': 'trace', # boringtun
-                                'WG_LOG_FILE': str(LOG_DIR / 'boring.log'),
-                                'LOG_LEVEL': 'debug', # WG-go
-                                },
-                           start_new_session=True,
-                           # to prevent being killed
-                           )
+        config_interface(profile, config_file)
+    else:
+        start_daemon(profile, config_file)
 
-        p.wait()
 
-        if p.returncode != 0:
-            print("Dying", flush=True)
-            return err
+def start_daemon(profile, config_file):
+    p = subprocess.Popen(['/usr/bin/python3', 'src/daemon.py', profile['profile_name']],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          stdin=subprocess.DEVNULL,
+                          start_new_session=True,
+                        )
+    print('starting daemon')
+    p.wait()
+    print(p.stderr.read())
+    print('daemon started', p.returncode, flush=True)
+
+def config_interface(profile, config_file):
+    interface_name = profile['interface_name']
+    subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'set', 'down', 'dev', interface_name], check=False)
 
     p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg',
                           'setconf', interface_name, str(config_file)],
@@ -39,9 +35,6 @@ def _connect(profile, config_file):
                           )
     p.wait()
     err = p.stderr.read().decode()
-    print(err, flush=True)
-    print(p.stdout.read().decode(), flush=True)
-    print(p.returncode, flush=True)
     if p.returncode != 0:
         return err
 
@@ -53,14 +46,11 @@ def _connect(profile, config_file):
         extra_route = extra_route.strip()
         subprocess.run(['/usr/bin/sudo', 'ip', 'route', 'add', extra_route, 'dev', interface_name], check=True)
 
-#
-
 def disconnect(interface_name):
     # It is fine to have this fail, it is only trying to cleanup before starting
     subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'del', 'dev', interface_name],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                    check=False)
-#
 
 def _get_wg_status():
     if Path('/usr/bin/sudo').exists():

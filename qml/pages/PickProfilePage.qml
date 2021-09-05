@@ -1,11 +1,15 @@
 import QtQuick 2.0
 import Ubuntu.Components 1.3 as UITK
 import io.thp.pyotherside 1.3
+import Qt.labs.settings 1.0
 
 import "../components"
 
 UITK.Page {
-    property bool connected: true // FIXME
+    Settings {
+        id: settings
+        property bool useUserspace: false
+    }
     header: UITK.PageHeader {
         id: header
         title: "Wireguard"
@@ -53,7 +57,8 @@ UITK.Page {
                         iconName: 'webbrowser-app'
                         visible: !status
                         onTriggered: {
-                            python.call('vpn._connect', [profile_name],
+                            python.call('vpn._connect',
+                                        [profile_name, !settings.useUserspace],
                                         function (error_msg) {
                                             if (error_msg) {
                                                 toast.show('Failed:' + error_msg)
