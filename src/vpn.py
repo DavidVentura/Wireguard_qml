@@ -147,7 +147,7 @@ def list_profiles():
         with path.open() as fd:
             data = json.load(fd)
             data.setdefault('interface_name', 'wg0')
-            data['status'] = {}
+            data['c_status'] = {}
             print(data, flush=True)
             profiles.append(data)
     return profiles

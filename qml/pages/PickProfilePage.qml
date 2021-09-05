@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Layouts 1.12
 import Ubuntu.Components 1.3 as UITK
 import io.thp.pyotherside 1.3
 import Qt.labs.settings 1.0
@@ -8,7 +9,6 @@ import "../components"
 UITK.Page {
     Settings {
         id: settings
-        property bool useUserspace: false
     }
     header: UITK.PageHeader {
         id: header
@@ -18,6 +18,12 @@ UITK.Page {
                 iconName: "add"
                 onTriggered: {
                     stack.push(Qt.resolvedUrl("ProfilePage.qml"))
+                }
+            },
+            UITK.Action {
+                iconName: "settings"
+                onTriggered: {
+                    stack.push(Qt.resolvedUrl("SettingsPage.qml"))
                 }
             }
         ]
@@ -36,7 +42,28 @@ UITK.Page {
         }
 
         delegate: UITK.ListItem {
-            height: units.gu(10)
+            height: col.height + col.anchors.topMargin + col.anchors.bottomMargin
+            onClicked: {
+                if (!c_status.init) {
+                    python.call('vpn._connect',
+                                [profile_name, !settings.value('useUserspace',
+                                                               true)],
+                                function (error_msg) {
+                                    if (error_msg) {
+                                        toast.show('Failed:' + error_msg)
+                                        return
+                                    }
+                                    toast.show('Connecting..')
+                                    showStatus()
+                                })
+                } else {
+                    python.call('vpn.interface.disconnect', [interface_name],
+                                function () {
+                                    toast.show("Disconnected")
+                                })
+                }
+            }
+
             trailingActions: UITK.ListItemActions {
                 actions: [
                     UITK.Action {
@@ -52,55 +79,91 @@ UITK.Page {
                                            "interfaceName": interface_name
                                        })
                         }
-                    },
-                    UITK.Action {
-                        iconName: 'webbrowser-app'
-                        visible: !status
-                        onTriggered: {
-                            python.call('vpn._connect',
-                                        [profile_name, !settings.useUserspace],
-                                        function (error_msg) {
-                                            if (error_msg) {
-                                                toast.show('Failed:' + error_msg)
-                                                return
-                                            }
-                                            toast.show('Connected')
-                                        })
-                        }
-                    },
-                    UITK.Action {
-                        iconName: "close"
-                        visible: status
-                        onTriggered: {
-                            python.call('vpn.interface.disconnect',
-                                        [interface_name], function () {
-                                            toast.show("Disconnected")
-                                        })
-                        }
                     }
                 ]
             }
+
             Column {
-                anchors.leftMargin: units.gu(2)
-                anchors.rightMargin: units.gu(2)
+                id: col
+                anchors.top: parent.top
+                anchors.margins: units.gu(2)
                 anchors.left: parent.left
                 anchors.right: parent.right
+                spacing: units.gu(1)
 
-                Text {
-                    text: interface_name + ' - ' + profile_name
+                RowLayout {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    Text {
+                        Layout.fillWidth: true
+                        id: prof_name
+                        text: profile_name
+                        font.pixelSize: units.gu(2.25)
+                        font.bold: true
+                    }
+                    TunnelStatus {
+                        id: ts
+                        connected: !!c_status.peers
+                        size: 2.5
+                    }
+                }
+                Item {
+                    height: 1
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                }
+
+                Rectangle {
+                    visible: c_status && c_status.init
+                    height: 1
+                    color: '#ccc'
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                 }
 
                 Repeater {
-                    visible: status
-                    model: status.peers
+                    visible: c_status && c_status.init
+                    model: c_status.peers
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    delegate: Text {
-                        text: peerName(status.peers[index].public_key,
-                                       peers) + ' RX: ' + toHuman(
-                                  status.peers[index].rx) + ' TX: ' + toHuman(
-                                  status.peers[index].tx) + ' Up for: ' + ago(
-                                  status.peers[index].latest_handshake)
+                    delegate: RowLayout {
+                        property bool peerUp: c_status.init
+                                              && c_status.peers[index].up
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        Text {
+                            Layout.fillWidth: true
+                            color: peerUp ? 'black' : '#999'
+                            text: peerName(c_status.peers[index].public_key,
+                                           peers)
+                        }
+                        Row {
+
+                            visible: peerUp
+                            UITK.Icon {
+                                source: '../../assets/arrow_down.png'
+                                height: parent.height
+                                keyColor: 'black'
+                                color: 'blue'
+                            }
+
+                            Text {
+                                text: toHuman(c_status.peers[index].rx)
+                            }
+                            UITK.Icon {
+                                source: '../../assets/arrow_up.png'
+                                height: parent.height
+                                keyColor: 'black'
+                                color: 'green'
+                            }
+                            Text {
+                                text: toHuman(c_status.peers[index].tx)
+                            }
+                            Text {
+                                text: ' - ' + ago(
+                                          c_status.peers[index].latest_handshake)
+                            }
+                        }
                     }
                 }
             }
@@ -127,6 +190,9 @@ UITK.Page {
     }
     function ago(ts) {
         const delta = (new Date().getTime()) / 1000 - ts
+        if (delta > 86400) {
+            return Math.round(delta / 86400) + 'd'
+        }
         if (delta > 3600) {
             return Math.round(delta / 3600) + 'h'
         }
@@ -156,6 +222,7 @@ UITK.Page {
         python.call('vpn.list_profiles', [], function (profiles) {
             listmodel.clear()
             for (var i = 0; i < profiles.length; i++) {
+                profiles[i].init = false
                 listmodel.append(profiles[i])
             }
         })
@@ -167,16 +234,19 @@ UITK.Page {
                         for (var i = 0; i < listmodel.count; i++) {
                             const entry = listmodel.get(i)
 
-                            let status = ''
+                            let status = {
+                                "init": false
+                            }
                             for (const idx in Object.keys(all_status)) {
                                 const key = keys[idx]
                                 const i_status = all_status[key]
                                 if (entry.interface_name === key) {
                                     status = i_status
+                                    status['init'] = true
                                     break
                                 }
                             }
-                            listmodel.setProperty(i, 'status', status)
+                            listmodel.setProperty(i, 'c_status', status)
                         }
                     })
     }

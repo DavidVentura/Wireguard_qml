@@ -33,6 +33,6 @@ Popup {
     function show(text) {
         popupLabel.text = text
         open()
-        popupTimer.start()
+        popupTimer.restart()
     }
 }

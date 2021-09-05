@@ -54,7 +54,7 @@ def _get_wg_status():
         return subprocess.check_output(['/usr/bin/sudo', 'vendored/wg', 'show', 'all', 'dump']).decode().strip().splitlines()
     return '''
 wg0	qJ1YWXV6nPmouAditrRahp+5X/DlBJD02ZPkFjbLdE4=	iSOYKa61gszRvGnA4+IMkxEp364e1LrIcGuXcM4IeU8=	0	off
-wg0	YLA3Gq/GW0QrQQfPA5wq7zfXnQI94a7oA8780hwHxWU=	(none)	143.178.241.68:1194	10.88.88.1/32,192.168.2.0/24	0	0	0	off
+wg0	YLA3Gq/GW0QrQQfPA5wq7zfXnQI94a7oA8780hwHxWU=	(none)	143.178.241.68:1194	10.88.88.1/32,192.168.2.0/24	1630599999	0	0	off
 wg0	YLA3Gq/GW0QrQQfPA5wq7zfXnQI94a7oA8780hwHxWU=	(none)	143.178.241.68:1194	10.88.88.1/32,192.168.2.0/24	0	0	0	off
 wg1	my_privkey	my_pubkey	0	off
 wg1	peer_pubkey	(none)	143.178.241.68:1194	10.88.88.1/32,192.168.2.0/24	0	0	0	off
@@ -84,8 +84,10 @@ def current_status_by_interface():
                          'rx': transfer_rx,
                          'tx': transfer_tx,
                          'latest_handshake': latest_handshake,
+                         'up': int(latest_handshake) > 0,
                          }
             interface_status['peers'].append(peer_data)
+            interface_status['peers'] = sorted(interface_status['peers'], key=lambda x: not x['up'])
         else:
             raise ValueError("Can't parse line %s, it has %s parts", line, len(parts))
 

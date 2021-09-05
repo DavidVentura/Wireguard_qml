@@ -68,7 +68,8 @@ for an example change to the kernel."
     Settings {
         id: settings
         property bool finishedWizard: false
-        property bool useUserspace: false
+        property bool useUserspace: true
+        property bool canUseKmod: false
     }
     Python {
         id: python
@@ -77,6 +78,7 @@ for an example change to the kernel."
             importModule('vpn', function () {
                 python.call('vpn.can_use_kernel_module', [],
                             function (can_use_module) {
+                                settings.canUseKmod = can_use_module
                                 settings.useUserspace = !can_use_module
                                 wizardRunning = false
                                 if (can_use_module) {

@@ -123,7 +123,7 @@ UITK.Page {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.leftMargin: units.gu(2)
-                        anchors.rightMargin: units.gu(2)
+                        anchors.rightMargin: units.gu(2.1)
                         UITK.Label {
                             Layout.fillWidth: true
                             text: 'Peer #' + (index + 1)
@@ -142,7 +142,7 @@ UITK.Page {
                     }
 
                     MyTextField {
-                        title: i18n.ctr("download icon setting", "Name" + index)
+                        title: i18n.ctr("download icon setting", "Name")
                         text: name
                         onChanged: {
                             errorMsg = ''
@@ -182,19 +182,6 @@ UITK.Page {
                 }
             }
 
-            UITK.Label {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.leftMargin: units.gu(2)
-                anchors.rightMargin: units.gu(2)
-                wrapMode: Text.WordWrap
-                text: {
-                    if (isEditing) {
-                        return 'Interface: ' + interfaceName
-                    }
-                    return 'Interface: wg' + (settings.interfaceNumber + 1)
-                }
-            }
             UITK.Button {
                 text: "Add peer"
                 anchors.left: parent.left
