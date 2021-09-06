@@ -1,5 +1,8 @@
+import logging
 import subprocess
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 def _connect(profile, config_file, use_kmod):
     interface_name = profile['interface_name']
@@ -23,7 +26,9 @@ def start_daemon(profile, config_file):
 
 def config_interface(profile, config_file):
     interface_name = profile['interface_name']
+    log.info('Configuring interface %s', interface_name)
     subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'set', 'down', 'dev', interface_name], check=False)
+    log.info('Interface down')
 
     p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg',
                           'setconf', interface_name, str(config_file)],
@@ -31,16 +36,25 @@ def config_interface(profile, config_file):
                           stderr=subprocess.PIPE,
                           )
     p.wait()
+    log.info('Interface %s configured with %s', interface_name, config_file)
     err = p.stderr.read().decode()
     if p.returncode != 0:
+        log.error('But failed!')
+        log.error(p.stdout.read().decode())
+        log.error(err.strip())
         return err
 
+    log.info('Successfully')
     # TODO: check return codes
     subprocess.run(['/usr/bin/sudo', 'ip', 'address', 'add', 'dev', interface_name, profile['ip_address']], check=True)
+    log.info('Address set')
     subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'set', 'up', 'dev', interface_name], check=True)
+    log.info('Interface up')
 
     for extra_route in profile['extra_routes'].split(','):
         extra_route = extra_route.strip()
+        if not extra_route:
+            continue
         subprocess.run(['/usr/bin/sudo', 'ip', 'route', 'add', extra_route, 'dev', interface_name], check=True)
 
 def disconnect(interface_name):
@@ -51,7 +65,18 @@ def disconnect(interface_name):
 
 def _get_wg_status():
     if Path('/usr/bin/sudo').exists():
-        return subprocess.check_output(['/usr/bin/sudo', 'vendored/wg', 'show', 'all', 'dump']).decode().strip().splitlines()
+        p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg', 'show', 'all', 'dump'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             )
+        p.wait()
+        if p.returncode != 0:
+            print('Failed to run `wg show all dump`:')
+            print(p.stdout.read().decode().strip())
+            print(p.stderr.read().decode().strip())
+            return []
+        lines = p.stdout.read().decode().strip().splitlines()
+        return lines
     return '''
 wg0	qJ1YWXV6nPmouAditrRahp+5X/DlBJD02ZPkFjbLdE4=	iSOYKa61gszRvGnA4+IMkxEp364e1LrIcGuXcM4IeU8=	0	off
 wg0	YLA3Gq/GW0QrQQfPA5wq7zfXnQI94a7oA8780hwHxWU=	(none)	143.178.241.68:1194	10.88.88.1/32,192.168.2.0/24	1630599999	0	0	off
