@@ -114,7 +114,7 @@ UITK.Page {
                 }
 
                 Rectangle {
-                    visible: c_status && c_status.init
+                    visible: c_status && !!c_status.init
                     height: 1
                     color: '#ccc'
                     anchors.left: parent.left
@@ -122,7 +122,7 @@ UITK.Page {
                 }
 
                 Repeater {
-                    visible: c_status && c_status.init
+                    visible: c_status && !!c_status.init
                     model: c_status.peers
                     anchors.left: parent.left
                     anchors.right: parent.right
