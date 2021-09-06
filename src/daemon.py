@@ -45,6 +45,7 @@ def keep_tunnel(profile_name):
 
     log.info('Setting up tunnel')
     interface.config_interface(profile, CONFIG_FILE)
+    log.info('Tunnel is up')
 
     while interface_file.exists():
         new_route = get_preferred_def_route()
@@ -58,11 +59,13 @@ def keep_tunnel(profile_name):
     log.info("Interface %s no longer exists. Exiting", interface_name)
 
 def bring_up_interface(interface_name):
+    log.info('Bringing up %s', interface_name)
     p = subprocess.Popen(['/usr/bin/sudo', '-E',
                           'vendored/wireguard',
-                          '--log', str(LOG_DIR / 'boring.log'),
-                          '--verbosity', 'info',
                           interface_name],
+                          #'--log', str(LOG_DIR / 'boring.log'),
+                          #'--verbosity', 'info',
+                          #interface_name],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE,
                           stdin=subprocess.DEVNULL,
@@ -118,6 +121,7 @@ if __name__ == '__main__':
                         level=logging.INFO,
                         format='%(asctime)s [%(levelname)s] %(name)s %(message)s')
     log = logging.getLogger()
+    log.info('Started daemon with args: %s', sys.argv)
     log.info('Daemonizing')
     daemonize()
     log.info('Successfully daemonized')
