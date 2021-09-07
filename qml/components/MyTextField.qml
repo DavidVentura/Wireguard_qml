@@ -25,7 +25,7 @@ Item {
         UITK.TextField {
             id: tf
             Layout.fillWidth: true
-            placeholderText: '<font color="#ccc">' + placeholder + '</font>'
+            placeholderText: '<font color="' + theme.palette.normal.backgroundTertiaryText + '">' + placeholder + '</font>'
             onTextChanged: changed(text)
         }
         Loader {
@@ -39,12 +39,12 @@ Item {
         y: tf.y - height / 2
         z: 2
         text: title
-        color: '#333'
+        color: theme.palette.normal.foregroundText
         font.pixelSize: units.gu(1.25)
     }
 
     Rectangle {
-        color: tf.enabled ? 'white' : '#ddd'
+        color: tf.enabled ? theme.palette.normal.background : '#ddd'
         x: lb.x - units.gu(0.5)
         y: tf.y
         width: lb.width + units.gu(1)
