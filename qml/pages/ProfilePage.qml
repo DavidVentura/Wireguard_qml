@@ -262,12 +262,6 @@ UITK.Page {
                                  "endpoint": p.endpoint
                              })
         }
-        listmodel.append({
-                             "name": '',
-                             "key": '',
-                             "allowedPrefixes": '',
-                             "endpoint": ''
-                         })
     }
 
     Python {
