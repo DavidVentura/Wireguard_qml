@@ -1,7 +1,9 @@
 import logging
 import subprocess
+import os
 from pathlib import Path
 
+WG_PATH = Path(os.getcwd()) / "vendored/wg"
 log = logging.getLogger(__name__)
 
 def _connect(profile, config_file, use_kmod):
@@ -30,7 +32,7 @@ def config_interface(profile, config_file):
     subprocess.run(['/usr/bin/sudo', 'ip', 'link', 'set', 'down', 'dev', interface_name], check=False)
     log.info('Interface down')
 
-    p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg',
+    p = subprocess.Popen(['/usr/bin/sudo', str(WG_PATH),
                           'setconf', interface_name, str(config_file)],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE,
@@ -65,7 +67,7 @@ def disconnect(interface_name):
 
 def _get_wg_status():
     if Path('/usr/bin/sudo').exists():
-        p = subprocess.Popen(['/usr/bin/sudo', 'vendored/wg', 'show', 'all', 'dump'],
+        p = subprocess.Popen(['/usr/bin/sudo', str(WG_PATH), 'show', 'all', 'dump'],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              )

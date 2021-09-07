@@ -11,6 +11,7 @@ import vpn
 
 from pathlib import Path
 
+WG_PATH = Path(os.getcwd()) / "vendored/wireguard"
 LOG_DIR = Path('/home/phablet/.cache/wireguard.davidv.dev')
 log = None
 
@@ -61,11 +62,8 @@ def keep_tunnel(profile_name):
 def bring_up_interface(interface_name):
     log.info('Bringing up %s', interface_name)
     p = subprocess.Popen(['/usr/bin/sudo', '-E',
-                          'vendored/wireguard',
+                          str(WG_PATH),
                           interface_name],
-                          #'--log', str(LOG_DIR / 'boring.log'),
-                          #'--verbosity', 'info',
-                          #interface_name],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE,
                           stdin=subprocess.DEVNULL,
@@ -97,6 +95,7 @@ def daemonize():
         sys.exit(1)
 
     # decouple from parent environment
+    os.chdir('/')
     os.setsid()
     os.umask(0)
 
