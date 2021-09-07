@@ -1,0 +1,63 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the wireguard.davidv.dev package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wireguard.davidv.dev\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-09-07 10:30+0000\n"
+"PO-Revision-Date: 2021-09-07 12:34+0200\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+"Last-Translator: Malte Kiefer <malte.kieferłmailgermania.de>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: de\n"
+
+#: ../qml/pages/ProfilePage.qml:52
+msgctxt "download icon setting"
+msgid "Profile name"
+msgstr "Profilname"
+
+#: ../qml/pages/ProfilePage.qml:63
+msgctxt "download icon setting"
+msgid "Private Key"
+msgstr "Privater Schlüssel"
+
+#: ../qml/pages/ProfilePage.qml:92
+msgctxt "download icon setting"
+msgid "IP address (with prefix length)"
+msgstr "IP-Adresse (mit Präfixlänge)"
+
+#: ../qml/pages/ProfilePage.qml:102
+msgctxt "download icon "
+msgid "Extra routes"
+msgstr "Zusätzliche Routen"
+
+#: ../qml/pages/ProfilePage.qml:145
+msgctxt "download icon setting"
+msgid "Name"
+msgstr "Name"
+
+#: ../qml/pages/ProfilePage.qml:153
+msgctxt "download icon setting"
+msgid "Public key"
+msgstr "Öffentlicher Schlüssel"
+
+#: ../qml/pages/ProfilePage.qml:163
+msgctxt "download icon setting"
+msgid "Allowed IP prefixes"
+msgstr "Erlaubte IP-Präfixe"
+
+#: ../qml/pages/ProfilePage.qml:174
+msgctxt "download icon setting"
+msgid "Endpoint with port"
+msgstr "Endpunkt mit Port"
+
+#: wireguard.desktop.in.h:1
+msgid "Wireguard"
+msgstr "Wireguard"
