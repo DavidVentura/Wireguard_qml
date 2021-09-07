@@ -100,6 +100,7 @@ UITK.Page {
                         text: profile_name
                         font.pixelSize: units.gu(2.25)
                         font.bold: true
+                        color: theme.palette.normal.foregroundText
                     }
                     TunnelStatus {
                         id: ts
@@ -116,7 +117,7 @@ UITK.Page {
                 Rectangle {
                     visible: c_status && !!c_status.init
                     height: 1
-                    color: '#ccc'
+                    color: theme.palette.normal.backgroundTertiaryText
                     anchors.left: parent.left
                     anchors.right: parent.right
                 }
@@ -133,7 +134,7 @@ UITK.Page {
                         anchors.right: parent.right
                         Text {
                             Layout.fillWidth: true
-                            color: peerUp ? 'black' : '#999'
+                            color: peerUp ? theme.palette.normal.foregroundText : theme.palette.normal.backgroundTertiaryText
                             text: peerName(c_status.peers[index].public_key,
                                            peers)
                         }
