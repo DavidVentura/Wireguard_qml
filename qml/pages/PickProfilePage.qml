@@ -104,7 +104,7 @@ UITK.Page {
                     TunnelStatus {
                         id: ts
                         connected: !!c_status.peers
-                        size: 2.5
+                        size: 2
                     }
                 }
                 Item {
