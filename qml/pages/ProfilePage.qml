@@ -49,7 +49,7 @@ UITK.Page {
                 spacing: units.gu(1.5)
                 MyTextField {
                     visible: !isEditing
-                    title: i18n.ctr("download icon setting", "Profile name")
+                    title: i18n.tr("Profile name")
                     text: profileName
                     enabled: !isEditing
                     onChanged: {
@@ -60,7 +60,7 @@ UITK.Page {
 
                 MyTextField {
                     id: privateKeyField
-                    title: i18n.ctr("download icon setting", "Private Key")
+                    title: i18n.tr("Private Key")
                     placeholder: "a2VlcCB0aGlzIHNlY3JldAo="
                     text: privateKey
                     onChanged: {
@@ -70,13 +70,13 @@ UITK.Page {
                     control: RowLayout {
                         UITK.Button {
                             id: genKey
-                            text: "Generate"
+                            text: i18n.tr("Generate")
                             onClicked: {
                                 privateKey = python.call_sync('vpn.genkey', [])
                             }
                         }
                         UITK.Button {
-                            text: "Copy pubkey"
+                            text: i18n.tr("Copy pubkey")
                             enabled: privateKey
                             onClicked: {
                                 const pubkey = python.call_sync(
@@ -88,8 +88,7 @@ UITK.Page {
                     }
                 }
                 MyTextField {
-                    title: i18n.ctr("download icon setting",
-                                    "IP address (with prefix length)")
+                    title: i18n.tr("IP address (with prefix length)")
                     text: ipAddress
                     placeholder: "10.0.0.14/24"
                     onChanged: {
@@ -99,7 +98,7 @@ UITK.Page {
                 }
                 // TODO: Optional
                 MyTextField {
-                    title: i18n.ctr("download icon ", "Extra routes")
+                    title: i18n.tr("Extra routes")
                     text: extraRoutes
                     placeholder: "10.0.0.14/24"
                     onChanged: {
@@ -142,7 +141,7 @@ UITK.Page {
                     }
 
                     MyTextField {
-                        title: i18n.ctr("download icon setting", "Name")
+                        title: i18n.tr("Name")
                         text: name
                         onChanged: {
                             errorMsg = ''
@@ -150,7 +149,7 @@ UITK.Page {
                         }
                     }
                     MyTextField {
-                        title: i18n.ctr("download icon setting", "Public key")
+                        title: i18n.tr("Public key")
                         placeholder: "c29tZSBzaWxseSBzdHVmZgo="
                         text: key
                         onChanged: {
@@ -159,8 +158,7 @@ UITK.Page {
                         }
                     }
                     MyTextField {
-                        title: i18n.ctr("download icon setting",
-                                        "Allowed IP prefixes")
+                        title: i18n.tr("Allowed IP prefixes")
                         text: allowedPrefixes
                         onChanged: {
                             errorMsg = ''
@@ -170,8 +168,7 @@ UITK.Page {
                     }
 
                     MyTextField {
-                        title: i18n.ctr("download icon setting",
-                                        "Endpoint with port")
+                        title: i18n.tr("Endpoint with port")
                         text: endpoint
                         onChanged: {
                             errorMsg = ''
@@ -183,7 +180,7 @@ UITK.Page {
             }
 
             UITK.Button {
-                text: "Add peer"
+                text: i18n.tr("Add peer")
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.leftMargin: units.gu(2)
@@ -210,7 +207,7 @@ UITK.Page {
 
             UITK.Button {
                 id: save
-                text: "Save profile"
+                text: i18n.tr("Save profile")
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottomMargin: units.gu(2)

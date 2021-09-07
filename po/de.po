@@ -19,42 +19,34 @@ msgstr ""
 "Language: de\n"
 
 #: ../qml/pages/ProfilePage.qml:52
-msgctxt "download icon setting"
 msgid "Profile name"
 msgstr "Profilname"
 
 #: ../qml/pages/ProfilePage.qml:63
-msgctxt "download icon setting"
 msgid "Private Key"
 msgstr "Privater Schlüssel"
 
 #: ../qml/pages/ProfilePage.qml:92
-msgctxt "download icon setting"
 msgid "IP address (with prefix length)"
 msgstr "IP-Adresse (mit Präfixlänge)"
 
 #: ../qml/pages/ProfilePage.qml:102
-msgctxt "download icon "
 msgid "Extra routes"
 msgstr "Zusätzliche Routen"
 
 #: ../qml/pages/ProfilePage.qml:145
-msgctxt "download icon setting"
 msgid "Name"
 msgstr "Name"
 
 #: ../qml/pages/ProfilePage.qml:153
-msgctxt "download icon setting"
 msgid "Public key"
 msgstr "Öffentlicher Schlüssel"
 
 #: ../qml/pages/ProfilePage.qml:163
-msgctxt "download icon setting"
 msgid "Allowed IP prefixes"
 msgstr "Erlaubte IP-Präfixe"
 
 #: ../qml/pages/ProfilePage.qml:174
-msgctxt "download icon setting"
 msgid "Endpoint with port"
 msgstr "Endpunkt mit Port"
 
