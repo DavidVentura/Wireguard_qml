@@ -95,6 +95,13 @@ class Vpn:
             if ':' not in peer['endpoint']:
                 return 'Bad endpoint ({name}) -- missing ":"'.format_map(peer)
 
+            if len(peer['presharedKey']) > 0 and len(peer['presharedKey']) != 44:
+                return 'Preshared key ({name}) must be exactly 44 bytes long'.format_map(peer)
+            try:
+                base64.b64decode(peer['presharedKey'])
+            except Exception as e:
+                return 'Bad peer ({name}) preshared key'.format_map(peer)
+
             allowed_prefixes = peer['allowed_prefixes']
             for allowed_prefix in allowed_prefixes.split(','):
                 allowed_prefix = allowed_prefix.strip()
@@ -138,14 +145,25 @@ class Vpn:
             PrivateKey = {private_key}
             ''').format_map(profile))
             for peer in peers:
-                fd.write(textwrap.dedent('''
-                [Peer]
-                #Name = {name}
-                PublicKey = {key}
-                AllowedIPs = {allowed_prefixes}
-                Endpoint = {endpoint}
-                PersistentKeepalive = 5
-                '''.format_map(peer)))
+                if len(peer['presharedKey']) > 0:
+                    fd.write(textwrap.dedent('''
+                    [Peer]
+                    #Name = {name}
+                    PublicKey = {key}
+                    AllowedIPs = {allowed_prefixes}
+                    Endpoint = {endpoint}
+                    PresharedKey = {presharedKey}
+                    PersistentKeepalive = 5
+                    '''.format_map(peer)))
+                else:
+                    fd.write(textwrap.dedent('''
+                    [Peer]
+                    #Name = {name}
+                    PublicKey = {key}
+                    AllowedIPs = {allowed_prefixes}
+                    Endpoint = {endpoint}
+                    PersistentKeepalive = 5
+                    '''.format_map(peer)))
 
     def get_profile(self, profile):
         with (PROFILES_DIR / profile / 'profile.json').open() as fd:
