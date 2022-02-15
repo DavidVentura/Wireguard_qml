@@ -176,6 +176,16 @@ UITK.Page {
                         }
                         placeholder: "vpn.example.com:1234"
                     }
+
+                    MyTextField {
+                        title: i18n.tr("Preshared key")
+                        placeholder: "c29tZSBzaWxseSBzdHVmZgo="
+                        text: presharedKey
+                        onChanged: {
+                            errorMsg = ''
+                            presharedKey = text
+                        }
+                    }
                 }
             }
 
@@ -190,7 +200,8 @@ UITK.Page {
                                          "name": '',
                                          "key": '',
                                          "allowedPrefixes": '',
-                                         "endpoint": ''
+                                         "endpoint": '',
+                                         "presharedKey": ''
                                      })
                 }
             }
@@ -224,7 +235,8 @@ UITK.Page {
                                         "name": p.name,
                                         "key": p.key,
                                         "allowed_prefixes": p.allowedPrefixes,
-                                        "endpoint": p.endpoint
+                                        "endpoint": p.endpoint,
+                                        "presharedKey": p.presharedKey
                                     })
                     }
 
@@ -256,7 +268,8 @@ UITK.Page {
                                  "name": p.name,
                                  "key": p.key,
                                  "allowedPrefixes": p.allowed_prefixes,
-                                 "endpoint": p.endpoint
+                                 "endpoint": p.endpoint,
+                                 "presharedKey": p.presharedKey
                              })
         }
     }
