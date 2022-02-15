@@ -45,7 +45,7 @@ UITK.Page {
             height: col.height + col.anchors.topMargin + col.anchors.bottomMargin
             onClicked: {
                 if (!c_status.init) {
-                    python.call('vpn._connect',
+                    python.call('vpn.instance._connect',
                                 [profile_name, !settings.value('useUserspace',
                                                                true)],
                                 function (error_msg) {
@@ -57,7 +57,7 @@ UITK.Page {
                                     showStatus()
                                 })
                 } else {
-                    python.call('vpn.interface.disconnect', [interface_name],
+                    python.call('vpn.instance.interface.disconnect', [interface_name],
                                 function () {
                                     toast.show("Disconnected")
                                 })
@@ -176,7 +176,8 @@ UITK.Page {
         interval: 1000
         running: true
         onTriggered: {
-            showStatus()
+            if(listmodel.count > 0)
+                showStatus();
         }
     }
 
@@ -220,7 +221,7 @@ UITK.Page {
     }
 
     function populateProfiles() {
-        python.call('vpn.list_profiles', [], function (profiles) {
+        python.call('vpn.instance.list_profiles', [], function (profiles) {
             listmodel.clear()
             for (var i = 0; i < profiles.length; i++) {
                 profiles[i].init = false
@@ -229,7 +230,7 @@ UITK.Page {
         })
     }
     function showStatus() {
-        python.call('vpn.interface.current_status_by_interface', [],
+        python.call('vpn.instance.interface.current_status_by_interface', [],
                     function (all_status) {
                         const keys = Object.keys(all_status)
                         for (var i = 0; i < listmodel.count; i++) {
@@ -257,8 +258,10 @@ UITK.Page {
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../../src/'))
             importModule('vpn', function () {
-                populateProfiles()
-                showStatus()
+                python.call('vpn.instance.set_pwd', [root.pwd], function(result){});
+                populateProfiles();
+                if(listmodel.count > 0)
+                    showStatus();
             })
         }
     }

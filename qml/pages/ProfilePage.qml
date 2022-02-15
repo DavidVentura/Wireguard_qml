@@ -72,7 +72,7 @@ UITK.Page {
                             id: genKey
                             text: i18n.tr("Generate")
                             onClicked: {
-                                privateKey = python.call_sync('vpn.genkey', [])
+                                privateKey = python.call_sync('vpn.instance.genkey', [])
                             }
                         }
                         UITK.Button {
@@ -80,7 +80,7 @@ UITK.Page {
                             enabled: privateKey
                             onClicked: {
                                 const pubkey = python.call_sync(
-                                                 'vpn.genpubkey', [privateKey])
+                                                 'vpn.instance.genpubkey', [privateKey])
                                 UITK.Clipboard.push(pubkey)
                                 toast.show('Public key copied to clipboard')
                             }
@@ -228,7 +228,7 @@ UITK.Page {
                                     })
                     }
 
-                    python.call('vpn.save_profile',
+                    python.call('vpn.instance.save_profile',
                                 [profileName, ipAddress, privateKey, interfaceName, extraRoutes, _peers],
                                 function (error) {
                                     console.log(error)
@@ -265,7 +265,9 @@ UITK.Page {
         id: python
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../../src/'))
-            importModule('vpn', function () {})
+            importModule('vpn', function () {
+                python.call('vpn.instance.set_pwd', [root.pwd], function(result){});
+            })
         }
     }
 }

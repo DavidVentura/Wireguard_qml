@@ -33,19 +33,22 @@ def get_preferred_def_route():
     return ip
 
 
-def keep_tunnel(profile_name):
+def keep_tunnel(profile_name, sudo_pwd):
+
+    _vpn = vpn.Vpn()
+    _vpn.set_pwd(sudo_pwd)
 
     PROFILE_DIR = vpn.PROFILES_DIR / profile_name
     CONFIG_FILE = PROFILE_DIR / 'config.ini'
 
     route = get_preferred_def_route()
-    profile = vpn.get_profile(profile_name)
+    profile = _vpn.get_profile(profile_name)
     interface_name = profile['interface_name']
     interface_file = Path('/sys/class/net/') / interface_name
     bring_up_interface(interface_name)
 
     log.info('Setting up tunnel')
-    interface.config_interface(profile, CONFIG_FILE)
+    _vpn.interface.config_interface(profile, CONFIG_FILE)
     log.info('Tunnel is up')
 
     while interface_file.exists():
@@ -56,7 +59,7 @@ def keep_tunnel(profile_name):
             continue
         log.info('New route via %s, reconfiguring interface', new_route)
         route = new_route
-        interface.config_interface(profile, CONFIG_FILE)
+        _vpn.interface.config_interface(profile, CONFIG_FILE)
     log.info("Interface %s no longer exists. Exiting", interface_name)
 
 def bring_up_interface(interface_name):
@@ -116,16 +119,17 @@ def daemonize():
 
 if __name__ == '__main__':
     profile_name = sys.argv[1]
+    sudo_pwd = sys.argv[2]
     logging.basicConfig(filename=str(LOG_DIR / 'daemon-{}.log'.format(profile_name)),
                         level=logging.INFO,
                         format='%(asctime)s [%(levelname)s] %(name)s %(message)s')
     log = logging.getLogger()
-    log.info('Started daemon with args: %s', sys.argv)
+    log.info('Started daemon with args: %s %s %s', sys.argv[0], sys.argv[1], '*sudo_pwd*')
     log.info('Daemonizing')
     daemonize()
     log.info('Successfully daemonized')
     try:
-        keep_tunnel(profile_name)
+        keep_tunnel(profile_name, sudo_pwd)
     except Exception as e:
         log.exception(e)
     log.info('Exiting')
