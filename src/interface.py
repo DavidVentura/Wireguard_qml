@@ -141,6 +141,8 @@ class Interface:
                              'latest_handshake': latest_handshake,
                              'up': int(latest_handshake) > 0,
                              }
+                if not interface_status.get('peers'):
+                    interface_status['peers'] = []
                 interface_status['peers'].append(peer_data)
                 interface_status['peers'] = sorted(interface_status['peers'], key=lambda x: not x['up'])
             else:
