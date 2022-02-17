@@ -172,6 +172,7 @@ UITK.Page {
                             }
 
                             Text {
+                                color: theme.palette.normal.foregroundText
                                 text: toHuman(c_status.peers[index].rx)
                             }
                             UITK.Icon {
@@ -181,9 +182,11 @@ UITK.Page {
                                 color: 'green'
                             }
                             Text {
+                                color: theme.palette.normal.foregroundText
                                 text: toHuman(c_status.peers[index].tx)
                             }
                             Text {
+                                color: theme.palette.normal.foregroundText
                                 text: ' - ' + ago(
                                           c_status.peers[index].latest_handshake)
                             }
