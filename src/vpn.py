@@ -1,6 +1,7 @@
 import subprocess
 import time
 import os
+import shutil
 import base64
 import json
 import textwrap
@@ -166,6 +167,16 @@ class Vpn:
                     Endpoint = {endpoint}
                     PersistentKeepalive = 5
                     '''.format_map(peer)))
+
+    def delete_profile(self, profile):
+        print(profile)
+        PROFILE_DIR = PROFILES_DIR / profile
+        print(PROFILE_DIR)
+        try:
+            shutil.rmtree(PROFILE_DIR.as_posix())
+        except OSError as e:
+            return 'Error: ' + PROFILE_DIR + ': ' + e.strerror
+
 
     def get_profile(self, profile):
         with (PROFILES_DIR / profile / 'profile.json').open() as fd:

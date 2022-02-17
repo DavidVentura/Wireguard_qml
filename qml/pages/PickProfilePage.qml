@@ -65,6 +65,28 @@ UITK.Page {
                 }
             }
 
+            leadingActions: UITK.ListItemActions {
+                actions: [
+                    UITK.Action {
+                        iconName: 'delete'
+                        onTriggered: {
+                            python.call('vpn.instance.delete_profile', [profile_name],
+                                        function (error) {
+                                            if (error) {
+                                                console.log(error)
+                                                toast.show('Failed:' + error)
+                                            }
+                                            else
+                                            {
+                                                toast.show('Profile '+ profile_name +' deleted');
+                                                listmodel.remove(index);
+                                            }
+                                        })
+                        }
+                    }
+                ]
+            }
+
             trailingActions: UITK.ListItemActions {
                 actions: [
                     UITK.Action {
