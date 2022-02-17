@@ -18,7 +18,8 @@ UITK.Page {
             UITK.Action {
                 iconName: "add"
                 onTriggered: {
-                    stack.push(Qt.resolvedUrl("ProfilePage.qml"))
+                    stack.push(Qt.resolvedUrl("ProfilePage.qml"),
+                               {interfaceName: "wg" + listmodel.count})
                 }
             },
             UITK.Action {
@@ -76,7 +77,7 @@ UITK.Page {
                                            "ipAddress": ip_address,
                                            "privateKey": private_key,
                                            "extraRoutes": extra_routes,
-                                           "interfaceName": interface_name
+                                           "interfaceName": interface_name.length == 0 ? "wg" + index : interface_name
                                        })
                         }
                     }
