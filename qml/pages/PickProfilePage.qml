@@ -9,6 +9,7 @@ import "../components"
 UITK.Page {
     Settings {
         id: settings
+        property bool useUserspace: true
     }
     header: UITK.PageHeader {
         id: header
@@ -46,8 +47,7 @@ UITK.Page {
             onClicked: {
                 if (!c_status.init) {
                     python.call('vpn.instance._connect',
-                                [profile_name, !settings.value('useUserspace',
-                                                               true)],
+                                [profile_name, !settings.useUserspace],
                                 function (error_msg) {
                                     if (error_msg) {
                                         toast.show('Failed:' + error_msg)
