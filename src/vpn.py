@@ -63,7 +63,7 @@ class Vpn:
             return stdout.strip()
         return stderr.strip()
 
-    def save_profile(self, profile_name, ip_address, private_key, interface_name, extra_routes, peers):
+    def save_profile(self, profile_name, ip_address, private_key, interface_name, extra_routes, dns_servers, peers):
         if '/' in profile_name:
             return '"/" is not allowed in profile names'
 
@@ -121,6 +121,14 @@ class Vpn:
                 except Exception as e:
                     return 'Bad route ' + route + ': ' + str(e)
 
+        if dns_servers:
+            for dns in dns_servers.split(','):
+                dns = dns.strip()
+                try:
+                    IPv4Network(dns, strict=False)
+                except Exception as e:
+                    return 'Bad dns ' + dns + ': ' + str(e)
+
         PROFILE_DIR = PROFILES_DIR / profile_name
         PROFILE_DIR.mkdir(exist_ok=True, parents=True)
 
@@ -133,6 +141,7 @@ class Vpn:
 
         profile = {'peers': peers,
                    'ip_address': ip_address,
+                   'dns_servers': dns_servers,
                    'extra_routes': extra_routes,
                    'profile_name': profile_name,
                    'private_key': private_key,

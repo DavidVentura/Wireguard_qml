@@ -68,6 +68,18 @@ class Interface:
                         stdin=serve_pwd.stdout,
                         check=True)
         log.info('Address set')
+
+        # prepend dns entries to resolv.conf
+        for dns in profile['dns_servers'].split(','):
+            dns = dns.strip()
+            if not dns:
+                continue
+            serve_pwd = self.serve_sudo_pwd()
+            subprocess.run(['/usr/bin/sudo', '-S', 'sed', '-i','1i'+'nameserver '+ dns, '/run/resolvconf/resolv.conf'],
+                            stdin=serve_pwd.stdout,
+                            check=True)
+            log.info('Added DNS server '+ dns +' to resolv.conf')
+
         serve_pwd = self.serve_sudo_pwd()
         subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'link', 'set', 'up', 'dev', interface_name],
                         stdin=serve_pwd.stdout,
@@ -87,6 +99,13 @@ class Interface:
         # It is fine to have this fail, it is only trying to cleanup before starting
         serve_pwd = self.serve_sudo_pwd()
         subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'link', 'del', 'dev', interface_name],
+                       stdin=serve_pwd.stdout,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       check=False)
+
+        # remove temporary dns entries, reset resolv.conf
+        serve_pwd = self.serve_sudo_pwd()
+        subprocess.run(['/usr/bin/sudo', '-S', 'resolvconf', '-u'],
                        stdin=serve_pwd.stdout,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                        check=False)

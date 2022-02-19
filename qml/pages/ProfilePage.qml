@@ -13,6 +13,7 @@ UITK.Page {
     property string ipAddress
     property string privateKey
     property string extraRoutes
+    property string dnsServers
     property string interfaceName
 
     property variant peers: []
@@ -104,6 +105,15 @@ UITK.Page {
                     onChanged: {
                         errorMsg = ''
                         extraRoutes = text
+                    }
+                }
+                MyTextField {
+                    title: i18n.tr("DNS")
+                    text: dnsServers
+                    placeholder: "10.0.0.1"
+                    onChanged: {
+                        errorMsg = ''
+                        dnsServers = text
                     }
                 }
             }
@@ -241,7 +251,7 @@ UITK.Page {
                     }
 
                     python.call('vpn.instance.save_profile',
-                                [profileName, ipAddress, privateKey, interfaceName, extraRoutes, _peers],
+                                [profileName, ipAddress, privateKey, interfaceName, extraRoutes, dnsServers, _peers],
                                 function (error) {
                                     if (!error) {
                                         if (!isEditing) {

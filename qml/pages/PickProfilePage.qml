@@ -99,6 +99,7 @@ UITK.Page {
                                            "ipAddress": ip_address,
                                            "privateKey": private_key,
                                            "extraRoutes": extra_routes,
+                                           "dnsServers": dns_servers,
                                            "interfaceName": interface_name.length == 0 ? "wg" + index : interface_name
                                        })
                         }
