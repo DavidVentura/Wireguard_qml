@@ -51,8 +51,17 @@ UITK.MainView {
                 text: i18n.tr("OK")
                 color: UITK.UbuntuColors.green
                 onClicked: {
-                    passwordDialog.accepted(passwordTextField.text)
-                    PopupUtils.close(passwordDialog)
+                    python.call('test.test_sudo',
+                                [passwordTextField.text],
+                                function(result){
+                                    if(result) {
+                                        passwordDialog.accepted(passwordTextField.text)
+                                        PopupUtils.close(passwordDialog)
+                                    }
+                                    else {
+                                        console.log("Passwordcheck failed")
+                                    }
+                                });
                 }
             }
             UITK.Button {
@@ -66,18 +75,40 @@ UITK.MainView {
     }
 
     Component.onCompleted: {
-        var popup = PopupUtils.open(passwordPopup)
-        popup.accepted.connect(function(password) {
-            root.pwd = password;
+        // check if user has set a sudo pwd and show password prompt if so:
+        python.call('test.test_sudo',
+                    [""], // check with empty password
+                    function(result) {
+                        if(!result) {
+                            var popup = PopupUtils.open(passwordPopup)
+                            popup.accepted.connect(function(password) {
+                                root.pwd = password;
+                                checkFinished();
+                            });
+                            popup.rejected.connect(function() {
+                                console.log("canceled!");
+                                Qt.quit();
+                            });
+                        } else {
+                            checkFinished();
+                        }
+                    });
 
+        function checkFinished()
+        {
             if (settings.finishedWizard) {
-                stack.push(Qt.resolvedUrl("pages/PickProfilePage.qml"))
+                stack.push(Qt.resolvedUrl("pages/PickProfilePage.qml"));
             } else {
-                stack.push(Qt.resolvedUrl("pages/WizardPage.qml"))
+                stack.push(Qt.resolvedUrl("pages/WizardPage.qml"));
             }
-        })
-        popup.rejected.connect(function() {
-            console.log("canceled!");
-        })
+        }
+    }
+
+    Python {
+        id: python
+        Component.onCompleted: {
+            addImportPath(Qt.resolvedUrl('../src/'))
+            importModule('test', function () {})
+        }
     }
 }
