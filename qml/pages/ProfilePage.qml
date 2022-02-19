@@ -243,7 +243,6 @@ UITK.Page {
                     python.call('vpn.instance.save_profile',
                                 [profileName, ipAddress, privateKey, interfaceName, extraRoutes, _peers],
                                 function (error) {
-                                    console.log(error)
                                     if (!error) {
                                         if (!isEditing) {
                                             settings.interfaceNumber = settings.interfaceNumber + 1
@@ -252,8 +251,10 @@ UITK.Page {
                                         stack.push(Qt.resolvedUrl(
                                                        "PickProfilePage.qml"))
                                         return
+                                    } else {
+                                        console.log(error);
+                                        errorMsg = error;
                                     }
-                                    errorMsg = error
                                 })
                 }
             }
