@@ -71,13 +71,16 @@ for an example change to the kernel."
         property bool useUserspace: true
         property bool canUseKmod: false
     }
+
     Python {
         id: python
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../../src/'))
             importModule('vpn', function () {
-                python.call('vpn.can_use_kernel_module', [],
+                python.call('vpn.instance.set_pwd', [root.pwd], function(result){});
+                python.call('vpn.instance.can_use_kernel_module', [],
                             function (can_use_module) {
+                                console.debug("can use kernel module::"+can_use_module);
                                 settings.canUseKmod = can_use_module
                                 settings.useUserspace = !can_use_module
                                 wizardRunning = false

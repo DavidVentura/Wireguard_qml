@@ -15,6 +15,18 @@ UITK.Page {
     header: UITK.PageHeader {
         id: header
         title: "Settings"
+
+        leadingActionBar.actions: [
+            UITK.Action {
+                iconName: "back"
+                onTriggered: {
+                    // In case of useUserspace property changed,
+                    // make sure PickProfilePage gets loaded new, so the settings object gets also refreshed
+                    stack.clear()
+                    stack.push(Qt.resolvedUrl("PickProfilePage.qml"))
+                }
+            }
+        ]
     }
     ListView {
         anchors.top: header.bottom

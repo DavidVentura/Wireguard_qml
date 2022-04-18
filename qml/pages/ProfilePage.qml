@@ -13,6 +13,7 @@ UITK.Page {
     property string ipAddress
     property string privateKey
     property string extraRoutes
+    property string dnsServers
     property string interfaceName
 
     property variant peers: []
@@ -72,7 +73,7 @@ UITK.Page {
                             id: genKey
                             text: i18n.tr("Generate")
                             onClicked: {
-                                privateKey = python.call_sync('vpn.genkey', [])
+                                privateKey = python.call_sync('vpn.instance.genkey', [])
                             }
                         }
                         UITK.Button {
@@ -80,7 +81,7 @@ UITK.Page {
                             enabled: privateKey
                             onClicked: {
                                 const pubkey = python.call_sync(
-                                                 'vpn.genpubkey', [privateKey])
+                                                 'vpn.instance.genpubkey', [privateKey])
                                 UITK.Clipboard.push(pubkey)
                                 toast.show('Public key copied to clipboard')
                             }
@@ -104,6 +105,15 @@ UITK.Page {
                     onChanged: {
                         errorMsg = ''
                         extraRoutes = text
+                    }
+                }
+                MyTextField {
+                    title: i18n.tr("DNS")
+                    text: dnsServers
+                    placeholder: "10.0.0.1"
+                    onChanged: {
+                        errorMsg = ''
+                        dnsServers = text
                     }
                 }
             }
@@ -176,6 +186,16 @@ UITK.Page {
                         }
                         placeholder: "vpn.example.com:1234"
                     }
+
+                    MyTextField {
+                        title: i18n.tr("Preshared key")
+                        placeholder: "c29tZSBzaWxseSBzdHVmZgo="
+                        text: presharedKey
+                        onChanged: {
+                            errorMsg = ''
+                            presharedKey = text
+                        }
+                    }
                 }
             }
 
@@ -190,7 +210,8 @@ UITK.Page {
                                          "name": '',
                                          "key": '',
                                          "allowedPrefixes": '',
-                                         "endpoint": ''
+                                         "endpoint": '',
+                                         "presharedKey": ''
                                      })
                 }
             }
@@ -224,14 +245,14 @@ UITK.Page {
                                         "name": p.name,
                                         "key": p.key,
                                         "allowed_prefixes": p.allowedPrefixes,
-                                        "endpoint": p.endpoint
+                                        "endpoint": p.endpoint,
+                                        "presharedKey": p.presharedKey
                                     })
                     }
 
-                    python.call('vpn.save_profile',
-                                [profileName, ipAddress, privateKey, interfaceName, extraRoutes, _peers],
+                    python.call('vpn.instance.save_profile',
+                                [profileName, ipAddress, privateKey, interfaceName, extraRoutes, dnsServers, _peers],
                                 function (error) {
-                                    console.log(error)
                                     if (!error) {
                                         if (!isEditing) {
                                             settings.interfaceNumber = settings.interfaceNumber + 1
@@ -240,8 +261,10 @@ UITK.Page {
                                         stack.push(Qt.resolvedUrl(
                                                        "PickProfilePage.qml"))
                                         return
+                                    } else {
+                                        console.log(error);
+                                        errorMsg = error;
                                     }
-                                    errorMsg = error
                                 })
                 }
             }
@@ -256,7 +279,8 @@ UITK.Page {
                                  "name": p.name,
                                  "key": p.key,
                                  "allowedPrefixes": p.allowed_prefixes,
-                                 "endpoint": p.endpoint
+                                 "endpoint": p.endpoint,
+                                 "presharedKey": p.presharedKey
                              })
         }
     }
@@ -265,7 +289,9 @@ UITK.Page {
         id: python
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../../src/'))
-            importModule('vpn', function () {})
+            importModule('vpn', function () {
+                python.call('vpn.instance.set_pwd', [root.pwd], function(result){});
+            })
         }
     }
 }

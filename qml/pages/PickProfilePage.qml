@@ -9,6 +9,7 @@ import "../components"
 UITK.Page {
     Settings {
         id: settings
+        property bool useUserspace: true
     }
     header: UITK.PageHeader {
         id: header
@@ -17,7 +18,8 @@ UITK.Page {
             UITK.Action {
                 iconName: "add"
                 onTriggered: {
-                    stack.push(Qt.resolvedUrl("ProfilePage.qml"))
+                    stack.push(Qt.resolvedUrl("ProfilePage.qml"),
+                               {interfaceName: "wg" + listmodel.count})
                 }
             },
             UITK.Action {
@@ -45,9 +47,8 @@ UITK.Page {
             height: col.height + col.anchors.topMargin + col.anchors.bottomMargin
             onClicked: {
                 if (!c_status.init) {
-                    python.call('vpn._connect',
-                                [profile_name, !settings.value('useUserspace',
-                                                               true)],
+                    python.call('vpn.instance._connect',
+                                [profile_name, !settings.useUserspace],
                                 function (error_msg) {
                                     if (error_msg) {
                                         toast.show('Failed:' + error_msg)
@@ -57,11 +58,33 @@ UITK.Page {
                                     showStatus()
                                 })
                 } else {
-                    python.call('vpn.interface.disconnect', [interface_name],
+                    python.call('vpn.instance.interface.disconnect', [interface_name],
                                 function () {
                                     toast.show("Disconnected")
                                 })
                 }
+            }
+
+            leadingActions: UITK.ListItemActions {
+                actions: [
+                    UITK.Action {
+                        iconName: 'delete'
+                        onTriggered: {
+                            python.call('vpn.instance.delete_profile', [profile_name],
+                                        function (error) {
+                                            if (error) {
+                                                console.log(error)
+                                                toast.show('Failed:' + error)
+                                            }
+                                            else
+                                            {
+                                                toast.show('Profile '+ profile_name +' deleted');
+                                                listmodel.remove(index);
+                                            }
+                                        })
+                        }
+                    }
+                ]
             }
 
             trailingActions: UITK.ListItemActions {
@@ -76,7 +99,8 @@ UITK.Page {
                                            "ipAddress": ip_address,
                                            "privateKey": private_key,
                                            "extraRoutes": extra_routes,
-                                           "interfaceName": interface_name
+                                           "dnsServers": dns_servers,
+                                           "interfaceName": interface_name.length == 0 ? "wg" + index : interface_name
                                        })
                         }
                     }
@@ -149,6 +173,7 @@ UITK.Page {
                             }
 
                             Text {
+                                color: theme.palette.normal.foregroundText
                                 text: toHuman(c_status.peers[index].rx)
                             }
                             UITK.Icon {
@@ -158,9 +183,11 @@ UITK.Page {
                                 color: 'green'
                             }
                             Text {
+                                color: theme.palette.normal.foregroundText
                                 text: toHuman(c_status.peers[index].tx)
                             }
                             Text {
+                                color: theme.palette.normal.foregroundText
                                 text: ' - ' + ago(
                                           c_status.peers[index].latest_handshake)
                             }
@@ -176,7 +203,8 @@ UITK.Page {
         interval: 1000
         running: true
         onTriggered: {
-            showStatus()
+            if(listmodel.count > 0)
+                showStatus();
         }
     }
 
@@ -220,7 +248,7 @@ UITK.Page {
     }
 
     function populateProfiles() {
-        python.call('vpn.list_profiles', [], function (profiles) {
+        python.call('vpn.instance.list_profiles', [], function (profiles) {
             listmodel.clear()
             for (var i = 0; i < profiles.length; i++) {
                 profiles[i].init = false
@@ -229,7 +257,7 @@ UITK.Page {
         })
     }
     function showStatus() {
-        python.call('vpn.interface.current_status_by_interface', [],
+        python.call('vpn.instance.interface.current_status_by_interface', [],
                     function (all_status) {
                         const keys = Object.keys(all_status)
                         for (var i = 0; i < listmodel.count; i++) {
@@ -257,8 +285,10 @@ UITK.Page {
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../../src/'))
             importModule('vpn', function () {
-                populateProfiles()
-                showStatus()
+                python.call('vpn.instance.set_pwd', [root.pwd], function(result){});
+                populateProfiles();
+                if(listmodel.count > 0)
+                    showStatus();
             })
         }
     }
