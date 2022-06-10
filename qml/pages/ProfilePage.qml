@@ -24,7 +24,7 @@ UITK.Page {
     }
     header: UITK.PageHeader {
         id: header
-        title: isEditing ? "Edit profile " + profileName : "Create a new profile"
+        title: isEditing ? i18n.tr("Edit profile %1").arg(profileName) : i18n.tr("Create a new profile")
     }
 
     Flickable {
@@ -135,7 +135,7 @@ UITK.Page {
                         anchors.rightMargin: units.gu(2.1)
                         UITK.Label {
                             Layout.fillWidth: true
-                            text: 'Peer #' + (index + 1)
+                            text: i18n.tr('Peer #%1').arg(index + 1)
                         }
                         UITK.Icon {
                             name: "delete"
