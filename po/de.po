@@ -17,6 +17,10 @@ msgstr ""
 "Last-Translator: Malte Kiefer <malte.kieferłmailgermania.de>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Language: de\n"
+#: ../qml/Main.qml:41
+msgid "Your password is required to use the wireguard kernel modules."
+msgstr ""
+"Das Passwort ist notwendig um die Wireguard Kernel-Module zu verwenden."
 
 #: ../qml/pages/ProfilePage.qml:52
 msgid "Profile name"

@@ -38,7 +38,7 @@ UITK.MainView {
         Dialog {
             id: passwordDialog
             title: i18n.tr("Enter password")
-            text: i18n.tr("Your password is required for this action:")
+            text: i18n.tr("Your password is required to use the wireguard kernel modules.")
 
             signal accepted(string password)
             signal rejected()
