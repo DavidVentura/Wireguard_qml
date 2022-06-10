@@ -14,7 +14,7 @@ UITK.Page {
     }
     header: UITK.PageHeader {
         id: header
-        title: "Settings"
+        title: i18n.tr("Settings")
 
         leadingActionBar.actions: [
             UITK.Action {
@@ -40,8 +40,8 @@ UITK.Page {
             anchors.left: parent.left
             anchors.right: parent.right
             SettingsItem {
-                title: "Use slow userspace implementation"
-                description: "It will be buggy, slow and probably crash"
+                title: i18n.tr("Use slow userspace implementation")
+                description: i18n.tr("It will be buggy, slow and probably crash.")
                 control: UITK.Switch {
                     enabled: settings.canUseKmod
                     checked: settings.useUserspace
@@ -49,7 +49,7 @@ UITK.Page {
                 }
             }
             UITK.Button {
-                text: "Try validating the kernel module again"
+                text: i18n.tr("Try validating the kernel module again")
                 anchors.left: parent.left
                 anchors.right: parent.right
                 onClicked: {
