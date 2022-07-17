@@ -11,6 +11,8 @@ import (
 
 const peerStatusPath = "/peer_status/"
 const genKeyPairPath = "/generate_key_pair/"
+const connectPath = "/connect/"
+const disconnectPath = "/disconnect/"
 
 type badRequest struct {
 	Err string `json:"error"`
@@ -66,8 +68,30 @@ func peerStatus(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(peers)
 }
 
+func connectTunnel(w http.ResponseWriter, r *http.Request) {
+	tunnelName := r.URL.Path[len(connectPath):]
+	logger.Verbosef("Requested to bring up %s\n", tunnelName)
+	connect(false, "wg0", false)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func disconnectTunnel(w http.ResponseWriter, r *http.Request) {
+	tunnelName := r.URL.Path[len(connectPath):]
+	logger.Verbosef("Requested to bring down %s\n", tunnelName)
+	err := disconnect("wg0")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(badRequest{Err: err.Error()})
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func RPCServer() error {
 	http.HandleFunc(peerStatusPath, peerStatus)
 	http.HandleFunc(genKeyPairPath, generateKeyPair)
+	http.HandleFunc(connectPath, connectTunnel)
+	http.HandleFunc(disconnectPath, disconnectTunnel)
+	logger.Verbosef("Bringing up HTTP server\n")
 	return http.ListenAndServe("127.0.0.1:12345", nil)
 }

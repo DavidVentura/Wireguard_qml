@@ -1,7 +1,6 @@
 package main
 
 // TODO: sudo modprobe tun
-// TODO: expose connect / disconnect
 // TODO: expose test
 // TODO: add nameserver to /run/resolvconf/resolv.conf
 //
@@ -187,20 +186,14 @@ func main() {
 
 	// TODO log to .cache/wireguard.davidv.dev/daemon.log
 	// TODO log to .cache/wireguard.davidv.dev/daemon-<profile>.log
-	routeAllTraffic := false
-	useUserspace := false
 	daemonize := false
 
 	for _, val := range os.Args[1:] {
 		switch val {
-		case "--userspace":
-			useUserspace = true
 		case "--daemonize":
 			daemonize = true
-		case "--route-all-traffic":
-			routeAllTraffic = true
 		default:
-			logger.Errorf("Unknown argument %s; try --userspace or --route-all-traffic", val)
+			logger.Errorf("Unknown argument %s; try --daemonize", val)
 			return
 		}
 	}
@@ -225,7 +218,23 @@ func main() {
 		os.Exit(0)
 	}
 
-	go RPCServer()
+	RPCServer()
+
+}
+
+func disconnect(interfaceName string) error {
+	link, err := netlink.LinkByName(interfaceName)
+	if err != nil {
+		return err
+	}
+
+	err = netlink.LinkDel(link)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func connect(useUserspace bool, interfaceName string, routeAllTraffic bool) {
 	if useUserspace {
 		device := createUserspaceInterface(interfaceName)
 		logger.Verbosef("Interface %s created (userspace)", interfaceName)
@@ -253,5 +262,4 @@ func main() {
 		}
 		logger.Verbosef("Interface %s configured (kernel), exiting", interfaceName)
 	}
-
 }
