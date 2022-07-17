@@ -38,10 +38,20 @@ UITK.MainView {
         Dialog {
             id: passwordDialog
             title: i18n.tr("Enter password")
-            text: i18n.tr("Your password is required for this action:")
+            text: i18n.tr(
+                      "The wireguard binary needs to be setuid; your sudo password is needed for this")
 
             signal accepted(string password)
-            signal rejected()
+            signal rejected
+
+            UITK.Label {
+                id: error
+                color: "red"
+                text: ""
+                font.pixelSize: units.gu(1.5)
+                visible: text != ""
+                wrapMode: Text.Wrap
+            }
 
             UITK.TextField {
                 id: passwordTextField
@@ -51,56 +61,33 @@ UITK.MainView {
                 text: i18n.tr("OK")
                 color: UITK.UbuntuColors.green
                 onClicked: {
-                    python.call('test.test_sudo',
-                                [passwordTextField.text],
-                                function(result){
-                                    if(result) {
-                                        passwordDialog.accepted(passwordTextField.text)
+                    python.call('test.setuid_daemon', [passwordTextField.text],
+                                function (result) {
+                                    if (result === true) {
+                                        passwordDialog.accepted(
+                                                    passwordTextField.text)
                                         PopupUtils.close(passwordDialog)
+                                    } else {
+                                        error.text = result
                                     }
-                                    else {
-                                        console.log("Passwordcheck failed")
-                                    }
-                                });
+                                })
                 }
             }
             UITK.Button {
                 text: i18n.tr("Cancel")
                 onClicked: {
-                    passwordDialog.rejected();
+                    passwordDialog.rejected()
                     PopupUtils.close(passwordDialog)
                 }
             }
         }
     }
 
-    Component.onCompleted: {
-        // check if user has set a sudo pwd and show password prompt if so:
-        python.call('test.test_sudo',
-                    [""], // check with empty password
-                    function(result) {
-                        if(!result) {
-                            var popup = PopupUtils.open(passwordPopup)
-                            popup.accepted.connect(function(password) {
-                                root.pwd = password;
-                                checkFinished();
-                            });
-                            popup.rejected.connect(function() {
-                                console.log("canceled!");
-                                Qt.quit();
-                            });
-                        } else {
-                            checkFinished();
-                        }
-                    });
-
-        function checkFinished()
-        {
-            if (settings.finishedWizard) {
-                stack.push(Qt.resolvedUrl("pages/PickProfilePage.qml"));
-            } else {
-                stack.push(Qt.resolvedUrl("pages/WizardPage.qml"));
-            }
+    function checkFinished() {
+        if (settings.finishedWizard) {
+            stack.push(Qt.resolvedUrl("pages/PickProfilePage.qml"))
+        } else {
+            stack.push(Qt.resolvedUrl("pages/WizardPage.qml"))
         }
     }
 
@@ -108,7 +95,23 @@ UITK.MainView {
         id: python
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../src/'))
-            importModule('test', function () {})
+            importModule('test', function () {
+                if (python.call_sync("test.needs_sudo")) {
+                    if (python.call_sync("test.setuid_daemon", [""]) === true) {
+                        checkFinished()
+                        return
+                    }
+                    var popup = PopupUtils.open(passwordPopup)
+                    popup.accepted.connect(function (password) {
+                        root.pwd = password
+                        checkFinished()
+                    })
+                    popup.rejected.connect(function () {
+                        console.log("canceled!")
+                        Qt.quit()
+                    })
+                }
+            })
         }
     }
 }
