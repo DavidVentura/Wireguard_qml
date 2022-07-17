@@ -241,7 +241,7 @@ func main() {
 		device.Close()
 	} else {
 		err := createKernelspaceInterface(interfaceName)
-		if err != nil {
+		if err != nil && err != syscall.EEXIST {
 			logger.Errorf("Failed to create Kernelspace interface: %s", err)
 			return
 		}
