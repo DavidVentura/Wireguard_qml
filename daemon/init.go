@@ -227,6 +227,7 @@ func main() {
 		os.Exit(0)
 	}
 
+	go RPCServer()
 	if useUserspace {
 		device := createUserspaceInterface(interfaceName)
 		logger.Verbosef("Interface %s created (userspace)", interfaceName)
@@ -238,6 +239,7 @@ func main() {
 		logger.Verbosef("Interface %s configured (userspace), waiting for it to be deleted", interfaceName)
 		// TODO daemonize
 		<-device.Wait()
+		logger.Verbosef("Device is closed, exiting")
 		device.Close()
 	} else {
 		err := createKernelspaceInterface(interfaceName)
