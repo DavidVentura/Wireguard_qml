@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"golang.zx2c4.com/wireguard/wgctrl"
 )
@@ -17,6 +18,7 @@ type peerStatusResponse struct {
 	Endpoint      string
 	ReceiveBytes  int64
 	TransmitBytes int64
+	Seen          bool
 }
 
 func peerStatus(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +41,12 @@ func peerStatus(w http.ResponseWriter, r *http.Request) {
 	var peers []peerStatusResponse
 
 	for _, peer := range dev.Peers {
-		peers = append(peers, peerStatusResponse{Endpoint: peer.Endpoint.String(), ReceiveBytes: peer.ReceiveBytes, TransmitBytes: peer.TransmitBytes})
+		peers = append(peers, peerStatusResponse{
+			Endpoint:      peer.Endpoint.String(),
+			ReceiveBytes:  peer.ReceiveBytes,
+			TransmitBytes: peer.TransmitBytes,
+			Seen:          peer.LastHandshakeTime != time.Time{},
+		})
 	}
 	encoder.Encode(peers)
 }

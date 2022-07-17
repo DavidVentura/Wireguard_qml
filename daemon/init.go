@@ -4,7 +4,6 @@ package main
 // TODO: expose genkey / genpubkey
 // TODO: expose connect / disconnect
 // TODO: expose test
-// TODO: expose "status" (ReceiveBytes / TransmitBytes per Peer on a conn / device), LastHandshakeTime != nil (for up)
 // TODO: add nameserver to /run/resolvconf/resolv.conf
 //
 // subprocess.run(['/usr/bin/sudo', '-S', 'sed', '-i','1i'+'nameserver '+ dns, '/run/resolvconf/resolv.conf'],
