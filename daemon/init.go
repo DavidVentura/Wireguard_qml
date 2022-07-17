@@ -47,9 +47,11 @@ func configureInterface(iface string, routeAllTraffic bool) error {
 	//_, allowed, err := net.ParseCIDR("10.0.0.0/8")
 
 	cfg.FirewallMark = &FWMARK
+	keepalive_interval := time.Second * 5
 	cfg.Peers = []wgtypes.PeerConfig{wgtypes.PeerConfig{PublicKey: pubkey,
-		Endpoint:   &net.UDPAddr{IP: net.ParseIP(os.Getenv("WG_PEER_IP")), Port: 5111},
-		AllowedIPs: []net.IPNet{*allowed}}}
+		Endpoint:                    &net.UDPAddr{IP: net.ParseIP(os.Getenv("WG_PEER_IP")), Port: 5111},
+		PersistentKeepaliveInterval: &keepalive_interval,
+		AllowedIPs:                  []net.IPNet{*allowed}}}
 	err = client.ConfigureDevice(iface, cfg)
 	if err != nil {
 		return err
