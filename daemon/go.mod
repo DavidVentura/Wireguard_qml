@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/go-ini/ini v1.66.6 // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/josharian/native v1.0.0 // indirect
 	github.com/mdlayher/genetlink v1.2.0 // indirect
