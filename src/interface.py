@@ -7,108 +7,12 @@ WG_PATH = Path(os.getcwd()) / "vendored/wg"
 log = logging.getLogger(__name__)
 
 class Interface:
-    def __init__(self, sudo_pwd):
-        # sudo_cmd_list variable is a list like: ['echo', 'password', '|', '/usr/bin/sudo', '-S']
-        self._sudo_pwd = sudo_pwd
 
-    def serve_sudo_pwd(self):
-        return subprocess.Popen(['echo', self._sudo_pwd], stdout=subprocess.PIPE)
-
-    def _connect(self, profile, config_file, use_kmod):
-        interface_name = profile['interface_name']
-        self.disconnect(interface_name)
-
-        if use_kmod:
-            serve_pwd = self.serve_sudo_pwd()
-            subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'link', 'add', interface_name, 'type', 'wireguard'],
-                            stdin=serve_pwd.stdout,
-                            check=True)
-            self.config_interface(profile, config_file)
-        else:
-            self.start_daemon(profile, config_file)
-
-
-    def start_daemon(self, profile, config_file):
-        serve_pwd = self.serve_sudo_pwd()
-        p = subprocess.Popen(['/usr/bin/sudo', '-S', '/usr/bin/python3', 'src/daemon.py', profile['profile_name'], self._sudo_pwd],
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              stdin=serve_pwd.stdout,
-                              start_new_session=True,
-                            )
-        print('started daemon')
-
-    def config_interface(self, profile, config_file):
-        interface_name = profile['interface_name']
-        log.info('Configuring interface %s', interface_name)
-        serve_pwd = self.serve_sudo_pwd()
-        subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'link', 'set', 'down', 'dev', interface_name], check=False)
-        log.info('Interface down')
-
-        serve_pwd = self.serve_sudo_pwd()
-        p = subprocess.Popen(['/usr/bin/sudo', '-S', str(WG_PATH),
-                              'setconf', interface_name, str(config_file)],
-                              stdin=serve_pwd.stdout,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              )
-        p.wait()
-        log.info('Interface %s configured with %s', interface_name, config_file)
-        err = p.stderr.read().decode()
-        if p.returncode != 0:
-            log.error('But failed!')
-            log.error(p.stdout.read().decode())
-            log.error(err.strip())
-            return err
-
-        log.info('Successfully')
-        # TODO: check return codes
-        serve_pwd = self.serve_sudo_pwd()
-        subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'address', 'add', 'dev', interface_name, profile['ip_address']], 
-                        stdin=serve_pwd.stdout,
-                        check=True)
-        log.info('Address set')
-
-        # prepend dns entries to resolv.conf
-        for dns in profile['dns_servers'].split(','):
-            dns = dns.strip()
-            if not dns:
-                continue
-            serve_pwd = self.serve_sudo_pwd()
-            subprocess.run(['/usr/bin/sudo', '-S', 'sed', '-i','1i'+'nameserver '+ dns, '/run/resolvconf/resolv.conf'],
-                            stdin=serve_pwd.stdout,
-                            check=True)
-            log.info('Added DNS server '+ dns +' to resolv.conf')
-
-        serve_pwd = self.serve_sudo_pwd()
-        subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'link', 'set', 'up', 'dev', interface_name],
-                        stdin=serve_pwd.stdout,
-                        check=True)
-        log.info('Interface up')
-
-        for extra_route in profile['extra_routes'].split(','):
-            extra_route = extra_route.strip()
-            if not extra_route:
-                continue
-            serve_pwd = self.serve_sudo_pwd()
-            subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'route', 'add', extra_route, 'dev', interface_name],
-                            stdin=serve_pwd.stdout,
-                            check=True)
+    def connect(self, interface_name):
+        pass
 
     def disconnect(self, interface_name):
-        # It is fine to have this fail, it is only trying to cleanup before starting
-        serve_pwd = self.serve_sudo_pwd()
-        subprocess.run(['/usr/bin/sudo', '-S', 'ip', 'link', 'del', 'dev', interface_name],
-                       stdin=serve_pwd.stdout,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                       check=False)
-
-        # remove temporary dns entries, reset resolv.conf
-        serve_pwd = self.serve_sudo_pwd()
-        subprocess.run(['/usr/bin/sudo', '-S', 'resolvconf', '-u'],
-                       stdin=serve_pwd.stdout,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                       check=False)
+        pass
 
     def _get_wg_status(self):
         if Path('/usr/bin/sudo').exists():

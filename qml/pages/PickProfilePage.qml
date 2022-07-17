@@ -30,6 +30,7 @@ UITK.Page {
             }
         ]
     }
+
     ListView {
         anchors.top: header.bottom
         anchors.left: parent.left
@@ -58,7 +59,7 @@ UITK.Page {
                                     showStatus()
                                 })
                 } else {
-                    python.call('vpn.instance.interface.disconnect', [interface_name],
+                    python.call('vpn.instance._disconnect', [interface_name],
                                 function () {
                                     toast.show("Disconnected")
                                 })
@@ -257,6 +258,7 @@ UITK.Page {
         })
     }
     function showStatus() {
+        return // FIXME
         python.call('vpn.instance.interface.current_status_by_interface', [],
                     function (all_status) {
                         const keys = Object.keys(all_status)
@@ -285,7 +287,6 @@ UITK.Page {
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('../../src/'))
             importModule('vpn', function () {
-                python.call('vpn.instance.set_pwd', [root.pwd], function(result){});
                 populateProfiles();
                 if(listmodel.count > 0)
                     showStatus();

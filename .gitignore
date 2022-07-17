@@ -2,3 +2,6 @@ build
 .clickable
 *.pot
 *.autosave
+env
+daemon/daemon
+daemon/wireguard_qml
