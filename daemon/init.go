@@ -1,7 +1,6 @@
 package main
 
 // TODO: sudo modprobe tun
-// TODO: expose genkey / genpubkey
 // TODO: expose connect / disconnect
 // TODO: expose test
 // TODO: add nameserver to /run/resolvconf/resolv.conf

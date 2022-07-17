@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 const peerStatusPath = "/peer_status/"
+const genKeyPairPath = "/generate_key_pair/"
 
 type badRequest struct {
 	Err string `json:"error"`
@@ -19,6 +21,19 @@ type peerStatusResponse struct {
 	ReceiveBytes  int64
 	TransmitBytes int64
 	Seen          bool
+}
+
+type keyPairResponse struct {
+	Private string
+	Public  string
+}
+
+func generateKeyPair(w http.ResponseWriter, r *http.Request) {
+	privk, _ := wgtypes.GeneratePrivateKey()
+	pubk := privk.PublicKey()
+	encoder := json.NewEncoder(w)
+	w.Header().Set("Content-Type", "application/json")
+	encoder.Encode(keyPairResponse{Private: privk.String(), Public: pubk.String()})
 }
 
 func peerStatus(w http.ResponseWriter, r *http.Request) {
@@ -53,5 +68,6 @@ func peerStatus(w http.ResponseWriter, r *http.Request) {
 
 func RPCServer() error {
 	http.HandleFunc(peerStatusPath, peerStatus)
+	http.HandleFunc(genKeyPairPath, generateKeyPair)
 	return http.ListenAndServe("127.0.0.1:12345", nil)
 }
