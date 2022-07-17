@@ -1,5 +1,6 @@
 package main
 
+// TODO; parse connection profiles
 // TODO: sudo modprobe tun
 // TODO: expose test
 // TODO: add nameserver to /run/resolvconf/resolv.conf
@@ -168,8 +169,7 @@ func createKernelspaceInterface(interfaceName string) error {
 	attrs.Flags = net.FlagUp | net.FlagMulticast | net.FlagPointToPoint
 	attrs.TxQLen = 500 // copy userspace values
 
-	// TODO: find by name & delete
-	// netlink.LinkDel
+	_ = disconnect(interfaceName)
 	err := netlink.LinkAdd(&netlink.Wireguard{
 		LinkAttrs: attrs,
 	})
@@ -234,6 +234,7 @@ func disconnect(interfaceName string) error {
 	}
 	return nil
 }
+
 func connect(useUserspace bool, interfaceName string, routeAllTraffic bool) {
 	if useUserspace {
 		device := createUserspaceInterface(interfaceName)
