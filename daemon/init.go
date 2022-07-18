@@ -1,6 +1,5 @@
 package main
 
-// TODO; parse connection profiles
 // TODO: sudo modprobe tun
 // TODO: expose test
 // TODO: add nameserver to /run/resolvconf/resolv.conf
@@ -13,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 
@@ -27,7 +27,15 @@ import (
 
 var logger *device.Logger
 
-func configureInterface(iface string, routeAllTraffic bool) error {
+const CONFIG_BASE_PATH = "/home/david"
+
+type userspaceFiles struct {
+	dev          *device.Device
+	uapiFile     *os.File
+	uapiListener net.Listener
+}
+
+func configureInterface(iface string, config Config, routeAllTraffic bool) error {
 	var cfg wgtypes.Config
 	const MAIN_ROUTING_TABLE = 254
 	// https://man7.org/linux/man-pages/man8/ip-rule.8.html
@@ -36,20 +44,20 @@ func configureInterface(iface string, routeAllTraffic bool) error {
 	var FWMARK int = 666
 
 	client, err := wgctrl.New()
-	key, err := wgtypes.ParseKey(os.Getenv("WG_PRIVKEY"))
+	key, err := wgtypes.ParseKey(config.PrivateKey)
 	cfg.PrivateKey = &key
 
-	pubkey, err := wgtypes.ParseKey(os.Getenv("WG_REMOTE_PUBKEY"))
-
-	_, allowed, err := net.ParseCIDR("0.0.0.0/0")
-	//_, allowed, err := net.ParseCIDR("10.0.0.0/8")
-
 	cfg.FirewallMark = &FWMARK
-	keepalive_interval := time.Second * 5
-	cfg.Peers = []wgtypes.PeerConfig{wgtypes.PeerConfig{PublicKey: pubkey,
-		Endpoint:                    &net.UDPAddr{IP: net.ParseIP(os.Getenv("WG_PEER_IP")), Port: 5111},
-		PersistentKeepaliveInterval: &keepalive_interval,
-		AllowedIPs:                  []net.IPNet{*allowed}}}
+	cfg.Peers = []wgtypes.PeerConfig{}
+	for _, p := range config.Peers {
+		pubk, _ := wgtypes.ParseKey(p.PublicKey)
+		transformed := wgtypes.PeerConfig{PublicKey: pubk,
+			Endpoint:                    &net.UDPAddr{IP: p.IP, Port: p.Port},
+			PersistentKeepaliveInterval: &p.KeepAliveInterval,
+			AllowedIPs:                  p.AllowedIPs}
+		cfg.Peers = append(cfg.Peers, transformed)
+
+	}
 	err = client.ConfigureDevice(iface, cfg)
 	if err != nil {
 		return err
@@ -133,19 +141,23 @@ func configureInterface(iface string, routeAllTraffic bool) error {
 	}
 	return nil
 }
-func createUserspaceInterface(interfaceName string) *device.Device {
+func createUserspaceInterface(interfaceName string) (*userspaceFiles, error) {
 	tun, err := tun.CreateTUN(interfaceName, device.DefaultMTU)
 	if err != nil {
 		logger.Errorf("Failed to create TUN device '%s': %s", interfaceName, err)
-		os.Exit(1)
+		return nil, err
 	}
 	tunDevice := device.NewDevice(tun, conn.NewDefaultBind(), logger)
 	logger.Verbosef("Device %s created", interfaceName)
 	fileUAPI, err := ipc.UAPIOpen(interfaceName)
+	if err != nil {
+		logger.Errorf("Failed to open uapi socket: %v", err)
+		return nil, err
+	}
 	uapi, err := ipc.UAPIListen(interfaceName, fileUAPI)
 	if err != nil {
 		logger.Errorf("Failed to listen on uapi socket: %v", err)
-		os.Exit(2)
+		return nil, err
 	}
 
 	go func() {
@@ -160,7 +172,7 @@ func createUserspaceInterface(interfaceName string) *device.Device {
 	}()
 
 	logger.Verbosef("UAPI listener started")
-	return tunDevice
+	return &userspaceFiles{dev: tunDevice, uapiFile: fileUAPI, uapiListener: uapi}, nil
 }
 
 func createKernelspaceInterface(interfaceName string) error {
@@ -169,7 +181,6 @@ func createKernelspaceInterface(interfaceName string) error {
 	attrs.Flags = net.FlagUp | net.FlagMulticast | net.FlagPointToPoint
 	attrs.TxQLen = 500 // copy userspace values
 
-	_ = disconnect(interfaceName)
 	err := netlink.LinkAdd(&netlink.Wireguard{
 		LinkAttrs: attrs,
 	})
@@ -236,19 +247,31 @@ func disconnect(interfaceName string) error {
 }
 
 func connect(useUserspace bool, interfaceName string, routeAllTraffic bool) {
+	cfg, err := parseConfig(path.Join(CONFIG_BASE_PATH, fmt.Sprintf("%s.conf", interfaceName)))
+	if err != nil {
+		logger.Errorf("Failed to parse interface %s: %s", interfaceName, err)
+		return
+	}
+	_ = disconnect(interfaceName)
 	if useUserspace {
-		device := createUserspaceInterface(interfaceName)
+		uFiles, err := createUserspaceInterface(interfaceName)
+		if err != nil {
+			logger.Errorf("Failed to create interface %s: %s", interfaceName, err)
+			return
+		}
 		logger.Verbosef("Interface %s created (userspace)", interfaceName)
-		err := configureInterface(interfaceName, routeAllTraffic)
+		err = configureInterface(interfaceName, *cfg, routeAllTraffic)
 		if err != nil {
 			logger.Errorf("Failed to configure interface %s: %s", interfaceName, err)
 			return
 		}
 		logger.Verbosef("Interface %s configured (userspace), waiting for it to be deleted", interfaceName)
-		// TODO daemonize
-		<-device.Wait()
-		logger.Verbosef("Device is closed, exiting")
-		device.Close()
+		go func() {
+			<-uFiles.dev.Wait()
+			uFiles.dev.Close()
+			uFiles.uapiListener.Close()
+			uFiles.uapiFile.Close()
+		}()
 	} else {
 		err := createKernelspaceInterface(interfaceName)
 		if err != nil && err != syscall.EEXIST {
@@ -256,7 +279,7 @@ func connect(useUserspace bool, interfaceName string, routeAllTraffic bool) {
 			return
 		}
 		logger.Verbosef("Interface %s created (kernel)", interfaceName)
-		err = configureInterface(interfaceName, routeAllTraffic)
+		err = configureInterface(interfaceName, *cfg, routeAllTraffic)
 		if err != nil {
 			logger.Errorf("Failed to configure interface %s: %s", interfaceName, err)
 			return

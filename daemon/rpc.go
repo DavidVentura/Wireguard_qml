@@ -71,14 +71,14 @@ func peerStatus(w http.ResponseWriter, r *http.Request) {
 func connectTunnel(w http.ResponseWriter, r *http.Request) {
 	tunnelName := r.URL.Path[len(connectPath):]
 	logger.Verbosef("Requested to bring up %s\n", tunnelName)
-	connect(false, "wg0", false)
+	connect(true, tunnelName, false)
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func disconnectTunnel(w http.ResponseWriter, r *http.Request) {
-	tunnelName := r.URL.Path[len(connectPath):]
+	tunnelName := r.URL.Path[len(disconnectPath):]
 	logger.Verbosef("Requested to bring down %s\n", tunnelName)
-	err := disconnect("wg0")
+	err := disconnect(tunnelName)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(badRequest{Err: err.Error()})

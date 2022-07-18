@@ -6,22 +6,25 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-ini/ini"
 )
 
 type Peer struct {
-	IP         net.IP
-	Port       int
-	PublicKey  string
-	AllowedIPs []net.IPNet
+	IP                net.IP
+	Port              int
+	PublicKey         string
+	AllowedIPs        []net.IPNet
+	KeepAliveInterval time.Duration
 }
 type Config struct {
-	TunnelName string
-	Address    net.IP
-	MaskLen    int
-	PrivateKey string
-	Peers      []Peer
+	InterfaceName string
+	TunnelName    string
+	Address       net.IP
+	MaskLen       int
+	PrivateKey    string
+	Peers         []Peer
 }
 
 func parseConfig(path string) (*Config, error) {
@@ -64,11 +67,22 @@ func parseConfig(path string) (*Config, error) {
 		if len(endpoint_addr) == 0 {
 			return nil, errors.New("Could not resolve")
 		}
+
+		keepalive_interval := time.Second * 0
+		if sec.HasKey("KeepAliveInterval") {
+			interval, err := strconv.Atoi(sec.Key("KeepAliveInterval").String())
+			if err != nil {
+				logger.Errorf("Failed to parse KeepAliveInterval for Peer %s: %s", endpoint_addr[0], err)
+			} else {
+				keepalive_interval = time.Duration(interval) * time.Second
+			}
+		}
 		p := Peer{
-			IP:         endpoint_addr[0],
-			Port:       endpoint_port,
-			PublicKey:  sec.Key("PublicKey").String(),
-			AllowedIPs: cidrs,
+			IP:                endpoint_addr[0],
+			Port:              endpoint_port,
+			PublicKey:         sec.Key("PublicKey").String(),
+			AllowedIPs:        cidrs,
+			KeepAliveInterval: keepalive_interval,
 		}
 		peers = append(peers, p)
 	}
