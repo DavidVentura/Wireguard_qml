@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.12
 import Qt.labs.settings 1.0
-import Ubuntu.Components 1.3 as UITK
+import Lomiri.Components 1.3 as UITK
 import io.thp.pyotherside 1.3
 
 import "../components"

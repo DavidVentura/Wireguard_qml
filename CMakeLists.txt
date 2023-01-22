@@ -21,7 +21,7 @@ set(DESKTOP_FILE_NAME ${PROJECT_NAME}.desktop)
 if(DEFINED ENV{SDK_FRAMEWORK})
     set(CLICK_FRAMEWORK "$ENV{SDK_FRAMEWORK}")
 else()
-    set(CLICK_FRAMEWORK "ubuntu-sdk-16.04.3")
+    set(CLICK_FRAMEWORK "ubuntu-sdk-20.04")
 endif()
 
 # This figures out the target architecture for use in the manifest file.
@@ -68,12 +68,12 @@ execute_process(
    OUTPUT_VARIABLE CPU_ARCH
    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-install(FILES ${CMAKE_SOURCE_DIR}/vendored/wireguard-${CPU_ARCH} 
+install(FILES ${CMAKE_SOURCE_DIR}/vendored/wireguard-${CPU_ARCH}
 	DESTINATION ${DATA_DIR}vendored
 	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
 	RENAME wireguard
 	)
-install(FILES ${CMAKE_SOURCE_DIR}/vendored/wg-${CPU_ARCH} 
+install(FILES ${CMAKE_SOURCE_DIR}/vendored/wg-${CPU_ARCH}
 	DESTINATION ${DATA_DIR}vendored
 	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
 	RENAME wg

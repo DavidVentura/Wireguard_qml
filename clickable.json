@@ -1,5 +1,0 @@
-{
-  "builder": "cmake",
-  "kill": "qmlscene",
-  "clickable_minimum_required": "7"
-}

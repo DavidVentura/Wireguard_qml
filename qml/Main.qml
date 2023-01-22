@@ -2,8 +2,8 @@ import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import Qt.labs.settings 1.0
 import io.thp.pyotherside 1.3
-import Ubuntu.Components 1.3 as UITK
-import Ubuntu.Components.Popups 1.3
+import Lomiri.Components 1.3 as UITK
+import Lomiri.Components.Popups 1.3
 
 import "./pages"
 import "./components"
@@ -49,7 +49,7 @@ UITK.MainView {
             }
             UITK.Button {
                 text: i18n.tr("OK")
-                color: UITK.UbuntuColors.green
+                color: UITK.LomiriColors.green
                 onClicked: {
                     python.call('test.test_sudo',
                                 [passwordTextField.text],
