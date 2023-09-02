@@ -1,0 +1,3 @@
+#: ../qml/Main.qml:41
+msgid "Your password is required to use the wireguard kernel modules."
+msgstr ""
