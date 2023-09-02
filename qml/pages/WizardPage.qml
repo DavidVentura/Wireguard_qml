@@ -40,7 +40,7 @@ UITK.Page {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 wrapMode: Text.WordWrap
-                text: "Kernel module is <b>not usable</b>.<br/>Will fall back to the slow, buggy, userspace implementation."
+                text: i18n.tr("Kernel module is <b>not usable</b>.<br/>Will fall back to the slow, buggy, userspace implementation.")
                 onLinkActivated: Qt.openUrlExternally(link)
             }
         }
@@ -49,14 +49,14 @@ UITK.Page {
             anchors.left: parent.left
             anchors.right: parent.right
             wrapMode: Text.WordWrap
-            text: "Please, <b>get in touch with your device porter</b> (or with me) to add support on your device; it takes a couple of minutes only.<br/>\
+            text: i18n.tr("Please, <b>get in touch with your device porter</b> (or with me) to add support on your device; it takes a couple of minutes only.<br/>\
 See <a href='https://gitlab.com/ubports/community-ports/android9/xiaomi-poco-f1/kernel-xiaomi-beryllium/-/merge_requests/1'>here</a> \
-for an example change to the kernel."
+for an example change to the kernel.")
         }
         UITK.Button {
             anchors.left: parent.left
             anchors.right: parent.right
-            text: "Ok"
+            text: i18n.tr("OK")
             onClicked: {
                 settings.finishedWizard = true
                 stack.clear()

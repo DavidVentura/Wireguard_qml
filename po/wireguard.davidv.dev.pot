@@ -1,3 +1,153 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the wireguard.davidv.dev package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: wireguard.davidv.dev\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-06-10 20:41+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../qml/Main.qml:40
+msgid "Enter password"
+msgstr ""
+
 #: ../qml/Main.qml:41
 msgid "Your password is required to use the wireguard kernel modules."
+msgstr ""
+
+#: ../qml/Main.qml:51 ../qml/pages/WizardPage.qml:59
+msgid "OK"
+msgstr ""
+
+#: ../qml/Main.qml:68
+msgid "Cancel"
+msgstr ""
+
+#: ../qml/pages/PickProfilePage.qml:16 wireguard.desktop.in.h:1
+msgid "Wireguard"
+msgstr ""
+
+#: ../qml/pages/PickProfilePage.qml:57
+msgid "Connecting.."
+msgstr ""
+
+#: ../qml/pages/PickProfilePage.qml:63
+msgid "Disconnected"
+msgstr ""
+
+#: ../qml/pages/PickProfilePage.qml:77
+msgid "Failed:"
+msgstr ""
+
+#: ../qml/pages/PickProfilePage.qml:81
+msgid "Profile %1 deleted"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:27
+msgid "Create a new profile"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:27
+msgid "Edit profile %1"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:53
+msgid "Profile name"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:64
+msgid "Private Key"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:74
+msgid "Generate"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:80
+msgid "Copy pubkey"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:92
+msgid "IP address (with prefix length)"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:102
+msgid "Extra routes"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:111
+msgid "DNS"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:138
+msgid "Peer #%1"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:154
+msgid "Name"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:162
+msgid "Public key"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:171
+msgid "Allowed IP prefixes"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:181
+msgid "Endpoint with port"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:191
+msgid "Preshared key"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:203
+msgid "Add peer"
+msgstr ""
+
+#: ../qml/pages/ProfilePage.qml:231
+msgid "Save profile"
+msgstr ""
+
+#: ../qml/pages/SettingsPage.qml:17
+msgid "Settings"
+msgstr ""
+
+#: ../qml/pages/SettingsPage.qml:43
+msgid "Use slow userspace implementation"
+msgstr ""
+
+#: ../qml/pages/SettingsPage.qml:44
+msgid "It will be buggy, slow and probably crash."
+msgstr ""
+
+#: ../qml/pages/SettingsPage.qml:52
+msgid "Try validating the kernel module again"
+msgstr ""
+
+#: ../qml/pages/WizardPage.qml:43
+msgid ""
+"Kernel module is <b>not usable</b>.<br/>Will fall back to the slow, buggy, "
+"userspace implementation."
+msgstr ""
+
+#: ../qml/pages/WizardPage.qml:52
+msgid ""
+"Please, <b>get in touch with your device porter</b> (or with me) to add "
+"support on your device; it takes a couple of minutes only.<br/>See <a "
+"href='https://gitlab.com/ubports/community-ports/android9/xiaomi-poco-f1/"
+"kernel-xiaomi-beryllium/-/merge_requests/1'>here</a> for an example change "
+"to the kernel."
 msgstr ""

@@ -7,28 +7,77 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wireguard.davidv.dev\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-07 10:30+0000\n"
-"PO-Revision-Date: 2021-09-07 12:34+0200\n"
+"POT-Creation-Date: 2022-06-10 20:41+0000\n"
+"PO-Revision-Date: 2022-06-10 22:42+0200\n"
+"Last-Translator: Daniel Frost <one@frostinfo.de>\n"
 "Language-Team: \n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0\n"
-"Last-Translator: Malte Kiefer <malte.kieferłmailgermania.de>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: de\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: ../qml/Main.qml:40
+msgid "Enter password"
+msgstr "Passwort eingeben"
+
 #: ../qml/Main.qml:41
 msgid "Your password is required to use the wireguard kernel modules."
 msgstr ""
 "Das Passwort ist notwendig um die Wireguard Kernel-Module zu verwenden."
 
-#: ../qml/pages/ProfilePage.qml:52
+#: ../qml/Main.qml:51 ../qml/pages/WizardPage.qml:59
+msgid "OK"
+msgstr "OK"
+
+#: ../qml/Main.qml:68
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: ../qml/pages/PickProfilePage.qml:16 wireguard.desktop.in.h:1
+msgid "Wireguard"
+msgstr "Wireguard"
+
+#: ../qml/pages/PickProfilePage.qml:57
+msgid "Connecting.."
+msgstr "Verbinde..."
+
+#: ../qml/pages/PickProfilePage.qml:63
+msgid "Disconnected"
+msgstr "Verbindung getrennt"
+
+#: ../qml/pages/PickProfilePage.qml:77
+msgid "Failed:"
+msgstr "Fehlgeschlagen:"
+
+#: ../qml/pages/PickProfilePage.qml:81
+msgid "Profile %1 deleted"
+msgstr "Profil %1 gelöscht"
+
+#: ../qml/pages/ProfilePage.qml:27
+msgid "Create a new profile"
+msgstr "Neues Profil anlegen"
+
+#: ../qml/pages/ProfilePage.qml:27
+msgid "Edit profile %1"
+msgstr "Profil %1 editieren"
+
+#: ../qml/pages/ProfilePage.qml:53
 msgid "Profile name"
 msgstr "Profilname"
 
-#: ../qml/pages/ProfilePage.qml:63
+#: ../qml/pages/ProfilePage.qml:64
 msgid "Private Key"
 msgstr "Privater Schlüssel"
+
+#: ../qml/pages/ProfilePage.qml:74
+msgid "Generate"
+msgstr "Generieren"
+
+#: ../qml/pages/ProfilePage.qml:80
+msgid "Copy pubkey"
+msgstr "Öff. Schl. kopieren"
 
 #: ../qml/pages/ProfilePage.qml:92
 msgid "IP address (with prefix length)"
@@ -38,22 +87,79 @@ msgstr "IP-Adresse (mit Präfixlänge)"
 msgid "Extra routes"
 msgstr "Zusätzliche Routen"
 
-#: ../qml/pages/ProfilePage.qml:145
+#: ../qml/pages/ProfilePage.qml:111
+msgid "DNS"
+msgstr "DNS"
+
+#: ../qml/pages/ProfilePage.qml:138
+msgid "Peer #%1"
+msgstr "Gegenstelle #%1"
+
+#: ../qml/pages/ProfilePage.qml:154
 msgid "Name"
 msgstr "Name"
 
-#: ../qml/pages/ProfilePage.qml:153
+#: ../qml/pages/ProfilePage.qml:162
 msgid "Public key"
 msgstr "Öffentlicher Schlüssel"
 
-#: ../qml/pages/ProfilePage.qml:163
+#: ../qml/pages/ProfilePage.qml:171
 msgid "Allowed IP prefixes"
 msgstr "Erlaubte IP-Präfixe"
 
-#: ../qml/pages/ProfilePage.qml:174
+#: ../qml/pages/ProfilePage.qml:181
 msgid "Endpoint with port"
 msgstr "Endpunkt mit Port"
 
-#: wireguard.desktop.in.h:1
-msgid "Wireguard"
-msgstr "Wireguard"
+#: ../qml/pages/ProfilePage.qml:191
+msgid "Preshared key"
+msgstr "Gemeinsamer Schlüssel"
+
+#: ../qml/pages/ProfilePage.qml:203
+msgid "Add peer"
+msgstr "Gegenstelle hinzufügen"
+
+#: ../qml/pages/ProfilePage.qml:231
+msgid "Save profile"
+msgstr "Profil speichern"
+
+#: ../qml/pages/SettingsPage.qml:17
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: ../qml/pages/SettingsPage.qml:43
+msgid "Use slow userspace implementation"
+msgstr "Verwende die langsame Userspace Implementierung"
+
+#: ../qml/pages/SettingsPage.qml:44
+msgid "It will be buggy, slow and probably crash."
+msgstr "Diese ist fehlerhaft, langsam und wird vermutlich zusammenbrechen."
+
+#: ../qml/pages/SettingsPage.qml:52
+msgid "Try validating the kernel module again"
+msgstr "Versuche das Kernel-Modul neu zu validieren"
+
+#: ../qml/pages/WizardPage.qml:43
+msgid ""
+"Kernel module is <b>not usable</b>.<br/>Will fall back to the slow, buggy, "
+"userspace implementation."
+msgstr ""
+"Kernel-Modul ist <b>nicht nutzbar</b>.<br/>Falle zurück auf die langsame, "
+"fehlerbehaftete Userspace Implementation."
+
+#: ../qml/pages/WizardPage.qml:52
+msgid ""
+"Please, <b>get in touch with your device porter</b> (or with me) to add "
+"support on your device; it takes a couple of minutes only.<br/>See <a "
+"href='https://gitlab.com/ubports/community-ports/android9/xiaomi-poco-f1/"
+"kernel-xiaomi-beryllium/-/merge_requests/1'>here</a> for an example change "
+"to the kernel."
+msgstr ""
+"Bitte <b>nimm Kontakt mit dem Porter deines Gerätes auf</b> (oder mit mir) "
+"um die Unterstützung für dein Gerät hinzuzufügen. Das dauert nur ein paar "
+"Minuten.<br/>Ein Beispiel für eine Kernel-Anpassung ist <a href='https://"
+"gitlab.com/ubports/community-ports/android9/xiaomi-poco-f1/kernel-xiaomi-"
+"beryllium/-/merge_requests/1'>hier</a>  zu sehen."
+
+#~ msgid "Ok"
+#~ msgstr "Ok"

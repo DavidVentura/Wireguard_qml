@@ -13,7 +13,7 @@ UITK.Page {
     }
     header: UITK.PageHeader {
         id: header
-        title: "Wireguard"
+        title: i18n.tr("Wireguard")
         trailingActionBar.actions: [
             UITK.Action {
                 iconName: "add"
@@ -54,13 +54,13 @@ UITK.Page {
                                         toast.show('Failed:' + error_msg)
                                         return
                                     }
-                                    toast.show('Connecting..')
+                                    toast.show(i18n.tr('Connecting..'))
                                     showStatus()
                                 })
                 } else {
                     python.call('vpn.instance.interface.disconnect', [interface_name],
                                 function () {
-                                    toast.show("Disconnected")
+                                    toast.show(i18n.tr("Disconnected"))
                                 })
                 }
             }
@@ -74,11 +74,12 @@ UITK.Page {
                                         function (error) {
                                             if (error) {
                                                 console.log(error)
-                                                toast.show('Failed:' + error)
+                                                toast.show(i18n.tr('Failed:') + error)
                                             }
                                             else
                                             {
-                                                toast.show('Profile '+ profile_name +' deleted');
+                                                toast.show(i18n.tr('Profile %1 deleted').arg(profile_name));
+                                                // toast.show('Profile '+ profile_name +' deleted');
                                                 listmodel.remove(index);
                                             }
                                         })
